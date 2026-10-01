@@ -1,0 +1,1 @@
+Subset: STJ, secção social (direito do trabalho), 2010-2024. Critério: o STJ é onde a jurisprudência se consolida e onde as viragens de entendimento são mais relevantes; uma só área mantém o volume gerível e o vocabulário coerente, o que facilita o agrupamento por tema.
