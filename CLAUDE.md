@@ -5,6 +5,8 @@
 
 ## 1. O desafio (resumo do enunciado)
 
+> O texto original completo está em `ENUNCIADO.md`. Em caso de dúvida, prevalece o enunciado.
+
 Construir, do zero, o protótipo de uma ferramenta que compita com a ByTheLaw mas centrada em **jurisprudência**: agrega acórdãos **por tema** e identifica **decisões divergentes ao longo do tempo** (onde e quando os tribunais mudaram de entendimento sobre a mesma questão).
 
 - Fonte obrigatória: **dgsi.pt**. Subset à escolha (tribunal, área, intervalo), com critério explicado.
