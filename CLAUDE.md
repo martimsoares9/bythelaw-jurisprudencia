@@ -13,7 +13,7 @@ Construir, do zero, o protótipo de uma ferramenta que compita com a ByTheLaw ma
 - Recolha **responsável**, sem sobrecarregar o site.
 - IA usada de forma intensiva (engenharia agêntica, código, análise dos acórdãos). **Rapidez > polimento.**
 - Entregáveis: (1) link da app em produção; (2) repositório com README que explique como correr; (3) nota curta de decisões (subset, agrupamento por tema, deteção de divergências, limitações); (4) descrição do uso de IA (ferramentas, fluxo, o que funcionou / não funcionou); (5) vídeo curto de demo com narração.
-- Prazo: **10 dias úteis** desde a receção do email; entregar antes dá pontos extra. Alvo realista: entregar ao dia 8–9.
+-**Prazo:** 12 dias a contar apartir de agora. Entregar antes do tempo dá pontos extra.
 
 ## 2. Quem é o utilizador
 
