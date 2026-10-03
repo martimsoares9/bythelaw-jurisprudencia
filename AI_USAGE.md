@@ -1,3 +1,10 @@
+Sempre que usares a IA para algo relevante, acrescentas uma linha à tabela do diário, com cinco coisas:
+a data;
+a fase (setup, scraper, temas, divergências, interface...);
+o que pediste;
+se funcionou;
+o que tiveste de corrigir ou o que aprendeste.
+
 # Como usei IA neste projeto
 
 ## Ferramentas

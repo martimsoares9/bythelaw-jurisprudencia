@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Acórdão do Supremo Tribunal de Justiça</title></head>
+<body text="#000000" bgcolor="#FFFFFF">
+
+
+
+<p><font size="2"> </font>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<tr valign="top"><td width="26%" bgcolor="#71B2CF"><div align="center"><b><font size="2" color="#000080"><b><a href = "/jstj.nsf/Por+Ano?OpenView">Acórdãos STJ</a></b></font></b></div></td><td width="74%" bgcolor="#71B2CF"><div align="center"><b><font size="4" color="#FFFFFF">Acórdão do Supremo Tribunal de Justiça</font></b></div></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#71B2CF"><b><font size="2" color="#FFFFFF">Processo:</font></b></td><td width="74%" bgcolor="#E0F1FF">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<tr valign="top"><td width="50%" valign="middle"><b><font size="2"> </font></b><b><font size="2" color="#000080">2048/25.3T8FNC.L1.S2</font></b></td><td width="50%" valign="middle"><img width="1" height="1" src="/icons/ecblank.gif" border="0" alt=""></td></tr>
+</table>
+</td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#71B2CF"><b><font size="2" color="#FFFFFF">Nº Convencional:</font></b></td><td width="74%" bgcolor="#E0F1FF"><b><font size="2" color="#FFFFFF"> </font></b><b><font size="2" color="#000080">4.ª SECÇÃO</font></b></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#71B2CF"><b><font size="2" color="#FFFFFF">Relator:</font></b></td><td width="74%" bgcolor="#E0F1FF"><b><font size="2"> </font></b><b><font size="2" color="#000080">JÚLIO GOMES</font></b></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#71B2CF"><b><font size="2" color="#FFFFFF">Descritores:</font></b></td><td width="74%" bgcolor="#E0F1FF"><b><font size="2"> </font></b><b><font size="2" color="#000080">RECURSO DE REVISTA EXCECIONAL<br>
+PRESUNÇÃO DE ACEITAÇÃO DO DESPEDIMENTO</font></b></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#FFFFFF"><img width="1" height="1" src="/icons/ecblank.gif" border="0" alt=""></td><td width="74%" bgcolor="#FFFFFF"><img width="1" height="1" src="/icons/ecblank.gif" border="0" alt=""></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#71B2CF"><b><font size="2" color="#FFFFFF">Data do Acordão:</font></b></td><td width="74%" bgcolor="#E0F1FF"><b><font size="2"> </font></b><b><font size="2" color="#000080">21-09-2026</font></b></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#71B2CF"><b><font size="2" color="#FFFFFF">Votação:</font></b></td><td width="74%" bgcolor="#E0F1FF"><b><font size="2"> </font></b><b><font size="2" color="#000080">UNANIMIDADE</font></b></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#71B2CF"><b><font size="2" color="#FFFFFF">Texto Integral:</font></b></td><td width="74%" bgcolor="#E0F1FF"><b><font size="2"> </font></b><b><font size="2" color="#000080">S</font></b></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#71B2CF"><b><font size="2" color="#FFFFFF">Privacidade:</font></b></td><td width="74%" bgcolor="#E0F1FF"><b><font size="2"> </font></b><b><font size="2" color="#000080">1</font></b></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#FFFFFF"><img width="1" height="1" src="/icons/ecblank.gif" border="0" alt=""></td><td width="74%" bgcolor="#FFFFFF"><img width="1" height="1" src="/icons/ecblank.gif" border="0" alt=""></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#71B2CF"><b><font size="2" color="#FFFFFF">Meio Processual:</font></b></td><td width="74%" bgcolor="#E0F1FF"><font size="2"> </font><b><font size="2" color="#000080">REVISTA EXCEPCIONAL</font></b></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#71B2CF"><b><font size="2" color="#FFFFFF">Decisão:</font></b></td><td width="74%" bgcolor="#E0F1FF"><font size="2"> </font><b><font size="2" color="#000080">CONCEDIDA</font></b></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#FFFFFF"><img width="1" height="1" src="/icons/ecblank.gif" border="0" alt=""></td><td width="74%" bgcolor="#FFFFFF"><img width="1" height="1" src="/icons/ecblank.gif" border="0" alt=""></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#71B2CF"><b><font size="2" color="#FFFFFF">Sumário :</font></b></td><td width="74%" bgcolor="#E0F1FF"><b><font size="2"> </font></b><font size="2" color="#000080"><br>
+<font size="4" face="Times New Roman">Importa questionar se a não devolução de uma compensação paga em violação da exigência legal de que o seu pagamento ocorra até ao termo do aviso prévio tem o valor da aceitação do despedimento quando este até já foi impugnado pelo trabalhador</font></font></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#FFFFFF"><img width="1" height="1" src="/icons/ecblank.gif" border="0" alt=""></td><td width="74%" bgcolor="#FFFFFF"><img width="1" height="1" src="/icons/ecblank.gif" border="0" alt=""></td></tr>
+
+<tr valign="top"><td width="26%" bgcolor="#71B2CF"><b><font size="2" color="#FFFFFF">Decisão Texto Integral:</font></b></td><td width="74%" bgcolor="#FFFFFF"><b><font size="2"> </font></b><font size="2" color="#000080"><br>
+<font size="4" face="Times New Roman">Processo n.º 2048/25.3T8FNC.L1.S1</font><br>
+
+<p><font size="4" face="Times New Roman">Acordam, na Formação prevista no artigo 672.º n.º 3 do Código de Processo Civil junto da Secção Social do Supremo Tribunal de Justiça</font><br>
+
+<p><font size="4" face="Times New Roman">AA, Autor na presente ação de impugnação judicial da regularidade e licitude do despedimento em que é Ré, Marcaribe Services, Lda., veio interpor recurso de revista excecional do Acórdão do Tribunal da Relação de Lisboa, ao abrigo do disposto nas alíneas a) e b) do n.º 1 do artigo 672.º do Código de Processo Civil (doravante designado de CPC).</font><br>
+
+<p><font size="4" face="Times New Roman">A questão colocada no recurso é assim enunciada:</font><br>
+
+<p><font size="4" face="Times New Roman">&#8220;Está em causa a interpretação e alcance do artigo 366.º, n.ºs 4 e 5, do Código do Trabalho, designadamente se a presunção de aceitação do despedimento prevista naquela norma se aplica e produz efeitos quando o pagamento da compensação ocorre após a propositura da ação judicial de impugnação e após a citação do empregador&#8221;.</font><br>
+
+<p><font size="4" face="Times New Roman">Da matéria de facto provada nas instâncias consta, designadamente, o seguinte:</font><br>
+
+<p><font size="4" face="Times New Roman">&#8220;4 - Por notificação de 12 de Fevereiro de 2025, recebida pelo autor em 14 de Fevereiro de 2025, foi-lhe comunicada a intenção da ré de proceder ao seu despedimento por extinção do posto de trabalho, concedendo-lhe o prazo de 15 dias para transmitir o seu parecer fundamentado.</font><br>
+
+<p><font size="4" face="Times New Roman">5 - Por notificação de 7 de Março de 2025, recebida pelo autor em 14 de Março de 2025, foi-lhe comunicada a decisão de despedimento por extinção do posto de trabalho.</font><br>
+
+<p><font size="4" face="Times New Roman">6 - Consta da parte final desta decisão o seguinte:</font><br>
+
+<p><i><font size="4" face="Times New Roman">&#8220;Compensação</font></i><br>
+
+<p><i><font size="4" face="Times New Roman">Nos termos do art. 366.º ex vi do art. 372.º, ambos do Código do Trabalho, o trabalhador abrangido pelo presente despedimento tem direito a uma compensação de &#8364; 15.320,40, acrescida de férias não gozadas, subsídio de férias, subsídio de Natal e crédito de horas de formação, no montante de &#8364; 5.659,28, quantias que lhe serão pagas por transferência bancária, no dia 31 de Maio de 2025.</font></i><br>
+
+<p><i><font size="4" face="Times New Roman">Data da cessação do contrato</font></i><br>
+
+<p><i><font size="4" face="Times New Roman">A cessação do contrato de trabalho celebrado com o trabalhador AA em virtude do despedimento em causa, verificar-se-á no dia 31 de Maio de 2025.&#8221;</font></i><br>
+
+<p><font size="4" face="Times New Roman">Ora, sendo o artigo 366.º do Código do Trabalho aplicável ao despedimento por extinção do posto de trabalho por força do disposto no artigo 372.º do mesmo Código e sendo certo que, nas palavras da lei, &#8220;[o] despedimento por extinção do posto de trabalho só pode ter lugar desde que, até ao termo do aviso prévio, seja posta á disposição do trabalhador a compensação devida, bem como os créditos vencidos e os exigíveis por efeito da cessação do contrato de trabalho&#8221; (n.º 5 do artigo 368.º do Código do Trabalho), importa questionar se a não devolução de uma compensação paga em violação da exigência legal de que o seu pagamento ocorra até ao termo do aviso prévio tem o valor da aceitação do despedimento quando este até já foi impugnado pelo trabalhador e, se e mesmo que a resposta seja afirmativa o que deverá ter-se aqui por &#8220;em simultâneo&#8221; expressão referida no artigo 366.º n.º 5.</font><br>
+
+<p><font size="4" face="Times New Roman">A questão colocada pelo Recorrente que implica, aliás, a ponderação do Acórdão Uniformizador de Jurisprudência de 17.04.2024 (Proc. n.º 474/21.6T8MTS.P1.S1), é uma questão complexa, pouco tratada nos Tribunais Superiores e representa uma daquelas questões que claramente merece a intervenção deste Supremo Tribunal para uma melhor aplicação do direito.</font><br>
+
+<p><font size="4" face="Times New Roman">Estando preenchida a alínea a) do n.º 1 do n.º 1 do artigo 672.º do CPC torna-se desnecessário verificar se também estará preenchida a alínea b), dado que a lei se basta para a admissibilidade da revista excecional com o preenchimento de uma das alíneas do mencionado n.º 1 do artigo 672.º do CPC.</font><br>
+
+<p><font size="4" face="Times New Roman">Decisão: Admite-se a presente revista excecional.</font><br>
+
+<p><font size="4" face="Times New Roman">Custas a decidir a final.</font><br>
+
+<p><font size="4" face="Times New Roman">Lisboa, 21 de setembro de 2026</font></font></td></tr>
+</table>
+</body>
+</html>
