@@ -5,6 +5,8 @@
 
 ## 1. O desafio (resumo do enunciado)
 
+> O texto original completo está em `ENUNCIADO.md`. Em caso de dúvida, prevalece o enunciado.
+
 Construir, do zero, o protótipo de uma ferramenta que compita com a ByTheLaw mas centrada em **jurisprudência**: agrega acórdãos **por tema** e identifica **decisões divergentes ao longo do tempo** (onde e quando os tribunais mudaram de entendimento sobre a mesma questão).
 
 - Fonte obrigatória: **dgsi.pt**. Subset à escolha (tribunal, área, intervalo), com critério explicado.
@@ -86,3 +88,15 @@ Um só tribunal e uma só área; recall do pré-filtro por descritores; erros do
 - Commits pequenos e frequentes; mensagens em português.
 - Pipeline idempotente: re-correr não duplica nem repete chamadas pagas.
 - Explicar decisões não óbvias num comentário curto e registar no `AI_USAGE.md` o que correu mal.
+
+
+Trabalha sempre no branch main. No fim de cada tarefa, faz commit com uma mensagem clara e push para o main
+
+## Fluxo de trabalho
+- O projeto divide-se em 4 fases: (1) scraper do DGSI, (2) agrupamento por temas e deteção de divergências, (3) interface, (4) deploy, README e nota de decisões.
+- Trabalha sempre no branch `main`.
+- Quando terminares uma fase:
+  1. Confirma que o código corre sem erros.
+  2. Atualiza este CLAUDE.md com o que foi feito, as decisões tomadas e o que falta.
+  3. Faz commit e push para o `main`.
+  4. Avisa-me claramente: "Fase X concluída — abre uma sessão nova para a fase seguinte."
