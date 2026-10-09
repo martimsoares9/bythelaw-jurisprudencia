@@ -73,8 +73,13 @@ def _limpar(texto: str) -> str:
 
 
 def _data_iso(txt: str | None) -> str | None:
+    # O DGSI serve a data em dois formatos conforme a localização do pedido:
+    # "dd-mm-aaaa" (páginas vistas em Portugal) e "mm/dd/aaaa" (observado em pedidos
+    # de servidores no estrangeiro, p.ex. 06/30/2026). O separador distingue-os.
+    t = (txt or "").strip()
+    fmt = "%m/%d/%Y" if "/" in t else "%d-%m-%Y"
     try:
-        return datetime.strptime(txt or "", "%d-%m-%Y").date().isoformat()
+        return datetime.strptime(t, fmt).date().isoformat()
     except ValueError:
         return None
 
