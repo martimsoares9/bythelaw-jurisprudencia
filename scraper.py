@@ -305,13 +305,20 @@ def cmd_indexar(a):
     print(f"Feito. Novas: {novas_total}. Total na tabela lista: {total}.")
 
 
+def _regex_desc(txt):
+    """Aceita a regex diretamente ou '@ficheiro' (regex numa só linha)."""
+    if txt and txt.startswith("@"):
+        txt = Path(txt[1:]).read_text(encoding="utf-8").strip()
+    return re.compile(txt, re.I) if txt else None
+
+
 def cmd_stats(a):
     con = abrir_db()
     rows = con.execute(
         "SELECT substr(data_acordao,1,4) ano, descritores FROM lista WHERE data_acordao IS NOT NULL").fetchall()
     if not rows:
         sys.exit("A tabela `lista` está vazia. Corre primeiro: python scraper.py indexar")
-    rx = re.compile(a.descritores, re.I) if a.descritores else None
+    rx = _regex_desc(a.descritores)
     por_ano, filtrados = {}, {}
     for ano, desc in rows:
         por_ano[ano] = por_ano.get(ano, 0) + 1
@@ -326,7 +333,7 @@ def cmd_stats(a):
 def cmd_detalhes(a):
     exigir_contacto()
     con, cli = abrir_db(), Cliente()
-    rx = re.compile(a.descritores, re.I) if a.descritores else None
+    rx = _regex_desc(a.descritores)
     cand = con.execute(
         """SELECT doc_id,url,descritores FROM lista
            WHERE data_acordao BETWEEN ? AND ?
@@ -335,6 +342,9 @@ def cmd_detalhes(a):
         (f"{a.ano_min}-01-01", f"{a.ano_max}-12-31")).fetchall()
     if rx:
         cand = [c for c in cand if rx.search(c[2] or "")]
+    if a.amostra:  # amostra aleatória reprodutível (para medir o recall do filtro)
+        random.Random(42).shuffle(cand)
+        a.limite = a.amostra
     print(f"{len(cand)} acórdãos por recolher no filtro; a recolher até {a.limite}.")
     novos = 0
     for doc_id, url, _ in cand:
@@ -361,8 +371,9 @@ def main():
     p.add_argument("--descritores", help="regex a aplicar aos descritores"); p.set_defaults(f=cmd_stats)
     p = sp.add_parser("detalhes", help="FASE B: recolhe as páginas dos acórdãos escolhidos")
     p.add_argument("--ano-min", type=int, default=2010)
-    p.add_argument("--ano-max", type=int, default=2024)
+    p.add_argument("--ano-max", type=int, default=2026)
     p.add_argument("--descritores", help="regex a aplicar aos descritores (pré-filtro)")
+    p.add_argument("--amostra", type=int, help="recolhe N acórdãos aleatórios (semente 42)")
     p.add_argument("--limite", type=int, default=20); p.set_defaults(f=cmd_detalhes)
     a = ap.parse_args()
     a.f(a)
