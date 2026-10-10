@@ -25,7 +25,7 @@ Gato, estudante de Engenharia e Ciência de Dados (FCT Coimbra), Windows, trabal
 - **Tribunal:** STJ. Critério: é onde a jurisprudência se consolida e onde as viragens de entendimento são mais relevantes; os acórdãos de uniformização de jurisprudência (AUJ) são prova externa de divergências reais, o que permite validar.
 - **Área:** secção social (direito do trabalho) = `Nº Convencional: 4.ª SECÇÃO`. Critério: situações do dia a dia (despedimento, férias, retribuição), vocabulário coerente, volume gerível.
 - **Intervalo:** 2010–2024 como ponto de partida; os dados do DGSI chegam a set/2026, por isso pode estender-se. **Decidir depois de correr `indexar` + `stats`**, com base na contagem real por ano, e escrever o critério final no README.
-- **Números reais (2026-10-10):** índice com 21 681 acórdãos (2009–2026, todas as secções). Amostra aleatória de 150: 12 são da 4.ª Secção (~8%, ~1700 no período). Filtro por descritores (`filtro_laboral.txt`): 1775 candidatos; recall na amostra 9/12 (o inicial era 8/12; amostra pequena, valor incerto). Falta a 2.ª etapa por relatores (ver README, limitação principal).
+- **Números reais e recall medido:** ver `NOTA_DECISOES.md` (secções 1 e 4.1).
 - **Limitação a registar:** a lista do DGSI não traz a secção; o pré-filtro por descritores (regex laboral) poupa pedidos mas perde acórdãos laborais com outros descritores (recall < 100%).
 
 ### 3.2 O que se sabe do DGSI (observado em páginas reais)
@@ -109,20 +109,5 @@ Trabalha sempre no branch main. No fim de cada tarefa, faz commit com uma mensag
 - Mantém-se o trailer `Co-Authored-By: Claude` (transparência sobre o uso de IA, pedida pelo enunciado), salvo indicação em contrário do utilizador.
 - Quando a recolha terminar, guardar a cópia final da base em `dados/acordaos.db.gz` (ver README). Outra cópia no fim da extração por IA. Não guardar cópias intermédias (cada uma pesa ~12 MB no histórico).
 
-## Plano de trabalho por fases e estado (atualizar no fim de cada fase)
-As 4 fases gerais acima desdobram-se em 7 fases de trabalho. Em cada uma: mostrar o resultado ao utilizador (contagens, exemplos) e **esperar a confirmação** antes de avançar. No fim de cada fase, resumir em 3 linhas o que foi feito e o que se precisa do utilizador.
-
-| Fase | O que fazer | Mostrar ao utilizador | Estado |
-|---|---|---|---|
-| 1. Recolha | `indexar` + `stats`; propor subset com critério; só depois `detalhes` em volume | Contagem real por ano, subset proposto | **Feita** (subset aprovado: STJ, 4.ª Secção, 2010–2026) |
-| 2. Filtrar | `pipeline/filtrar.py`: 4.ª Secção + mérito. Recolher também por relatores da 4.ª Secção (`python pipeline/filtrar.py relatores`) para subir o recall | 5 exemplos, contagens finais, recall final | **Em curso**: recolha dos 1775 candidatos a correr; falta recolha por relatores, 5 exemplos e cópia final da base em `dados/acordaos.db.gz` |
-| 3. Extração por LLM | JSON estrito (`questao_juridica`, `normas`, `solucao`, `tipo`, `trecho`, `confianca`); `trecho` tem de ser substring do sumário; cache das respostas por hash do input; chave só em `.env` (`ANTHROPIC_API_KEY`) | Resultados de uma amostra de **50 acórdãos** antes de escalar | Por fazer |
-| 4. Temas e juiz de pares | Agrupamento por tema (embeddings da questão + normas, HDBSCAN) e juiz de pares (`mesma_solucao`/`solucao_oposta`/`nao_comparavel`) conforme a secção 3.5 | **3 temas** e **3 pares** classificados, incluindo um "não comparável" | Por fazer |
-| 5. Validação | AUJ da 4.ª Secção como verdade-terreno + **25 casos revistos à mão**; registar taxa de acerto e erros | Taxa de acerto, exemplos de erros | Por fazer |
-| 6. App | Streamlit que lê um ficheiro de dados já exportado (sem chamar LLM nem DGSI); **deploy cedo** | Link da app | Por fazer |
-| 7. Entrega | README (como correr, subset e critério, recolha responsável, limitações), `NOTA_DECISOES.md`, `AI_USAGE.md` (o que funcionou e o que falhou), link e vídeo | — | Em curso (documentos já com o que foi feito) |
-
-**Onde está cada coisa:** contexto e decisões em `CLAUDE.md`; entregáveis do enunciado mapeados na tabela no topo do `README.md`; decisões e limitações em `NOTA_DECISOES.md`; uso de IA em `AI_USAGE.md`; código em `scraper.py` e `pipeline/`.
-
-**Prazo: entrega até 2026-10-15** (confirmado pelo utilizador). Calendário no `GUIA.md`.
-- No fim de cada fase, atualizar também `GUIA.md` (secção 5 e o estado das fases): é o guia em linguagem simples do utilizador, que não tem formação jurídica nem em IA.
+## Plano de trabalho por fases e estado
+O plano das 7 fases (o que fazer, o que mostrar ao utilizador em cada uma, o que se precisa dele), o calendário (entrega até **2026-10-15**) e o estado atual estão em **`GUIA.md`** (secções 3, 4 e 5). Em cada fase: mostrar o resultado e **esperar a confirmação** antes de avançar; no fim, resumir em 3 linhas o que foi feito e o que se precisa do utilizador. Fase 2 (em curso): falta acabar a recolha, recolher por relatores (`python pipeline/filtrar.py relatores`), mostrar 5 exemplos e guardar a base final em `dados/acordaos.db.gz`.
