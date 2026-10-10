@@ -59,14 +59,53 @@ README com o mapa dos 5 entregáveis do enunciado, `NOTA_DECISOES.md`, `AI_USAGE
 O dia 15 é o dia da entrega, por isso não tem folga: se algo derrapar, o risco é entregar incompleto. Por isso a app deve estar online no dia 14, e o vídeo gravado no dia 15 de manhã. O enunciado dá pontos extra por entregar antes do prazo.
 Se um dia derrapar, corta-se primeiro o polimento da app, **nunca** a validação nem a documentação, porque o enunciado pede que fundamentes as decisões.
 
-## 5. Diário do guia (atualizar no fim de cada fase)
+## 5. Checklist de entrega (o que o `ENUNCIADO.md` exige) — marcar à medida que se fecha
+
+Antes de entregar, **todos** os itens têm de estar marcados e nenhum texto pode ter a etiqueta "POR FAZER".
+
+**O que construir**
+- [x] Usar o dgsi.pt como fonte
+- [x] Subset (tribunal, área, intervalo) com critério explicado — `NOTA_DECISOES.md`, secção 1
+- [x] Recolha responsável, sem sobrecarregar o site
+- [ ] **Agregar acórdãos por tema** (Fases 3 e 4)
+- [ ] **Identificar decisões divergentes ao longo do tempo** (Fases 4 e 5)
+- [ ] Uso intensivo de IA no pipeline (Fase 3 em diante)
+- [ ] Apresentação dos resultados: app web em Streamlit (Fase 6)
+
+**O que enviar**
+- [ ] 1. Link da app em produção (Fase 6) — plano B se o deploy falhar: app local + instruções + vídeo, explicado na nota
+- [ ] 2. Link do repositório (já público) + README com "como correr" completo, incluindo extração, temas e app
+- [ ] 3. Nota de decisões completa: subset, temas, divergências, limitações — sem etiquetas "POR FAZER"
+- [ ] 4. Descrição do uso de IA completa: ferramentas e modelos realmente usados, fluxo, o que funcionou, o que falhou, validação
+- [ ] 5. Vídeo curto com a tua narração a usar a app
+
+**Verificações finais (Fase 7)**
+- [ ] Nenhum "POR FAZER" nem "a acrescentar aqui" em `README.md`, `NOTA_DECISOES.md`, `AI_USAGE.md`
+- [ ] `requirements.txt` criado e o README testado do zero
+- [ ] A app abre no link e não depende do DGSI nem da API da IA em produção
+- [ ] Chave da API **fora** do repositório (só em `.env`)
+- [ ] Aviso visível na app: "classificação automática por IA, pode conter erros"
+- [ ] Entrega feita à empresa até **2026-10-15**
+
+**O que só tu podes fazer**
+- [ ] Criar a chave da API da Anthropic e pô-la no `.env` (antes da Fase 3)
+- [ ] Criar a conta de alojamento da app (Streamlit Community Cloud ou Hugging Face), até 10-13
+- [ ] Rever 25 classificações na Fase 5 (eu explico os termos jurídicos)
+- [ ] Gravar o vídeo (10-15 de manhã) e fazer a entrega
+
+**Plano B**
+- Deploy falha: entregar a app local + instruções + vídeo e explicar na nota ("idealmente deployed" no enunciado).
+- A IA não chega a boa qualidade em todos os acórdãos: reduzir o número de temas, mas bem validados e explicados.
+- Atraso grave: corta-se primeiro o polimento da app, depois o número de temas. **Nunca** a validação nem a documentação.
+
+## 6. Diário do guia (atualizar no fim de cada fase)
 
 | Fase | Fechada em | O que mudou desde a anterior | Surpresas / erros |
 |---|---|---|---|
 | 1 | 2026-10-10 | Índice completo e subset aprovado | Datas em formato americano |
 | 2 | *em curso* | | A recolha parou uma vez por mudança de ligação à internet; reiniciada |
 
-## 6. Palavras que vão aparecer
+## 7. Palavras que vão aparecer
 
 - **Acórdão:** decisão tomada por vários juízes. **Sumário:** o seu resumo oficial.
 - **Relator:** o juiz que escreve o acórdão.
