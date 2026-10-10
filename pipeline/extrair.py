@@ -22,6 +22,7 @@ Comandos:
   python pipeline/extrair.py resumo               # contagens, custo, taxa de validação
 """
 import argparse
+import difflib
 import hashlib
 import json
 import os
@@ -48,7 +49,7 @@ BASE_URL = os.environ.get("LLM_BASE_URL", "https://openrouter.ai/api/v1").rstrip
 MODELO = os.environ.get("LLM_MODEL_EXTRACAO", "anthropic/claude-haiku-5-5")
 CHAVE = (os.environ.get("LLM_API_KEY") or os.environ.get("OPENROUTER_API_KEY")
          or os.environ.get("ANTHROPIC_API_KEY") or "")
-VERSAO_PROMPT = "v1"
+VERSAO_PROMPT = "v2"
 SUMARIO_MAX = 6000   # caracteres do sumário enviados
 EXCERTO_DECISAO = 1200  # caracteres do fim da decisão
 TIPOS = {"merito", "admissibilidade", "processual", "outro"}
@@ -59,7 +60,11 @@ Campos:
 - "questao_juridica": a questão de direito decidida, em 1 frase genérica (sem nomes de partes, empresas ou pessoas), formulada como pergunta ou tema. Dois acórdãos sobre a mesma questão devem ter formulações parecidas.
 - "normas": lista (máx. 5) das normas-chave aplicadas, no formato "CT art. 366.º", "CPT art. 87.º", "CC art. 483.º". Lista vazia se o sumário não as indicar.
 - "solucao": a solução dada pelo tribunal, numa frase, em português europeu, sem inventar nada que não esteja no sumário ou no excerto da decisão.
-- "tipo": "merito" se o acórdão resolve a questão de direito; "admissibilidade" se só decide se o recurso é admitido; "processual" se decide só questões de processo (prazos, nulidades, competência…) sem resolver o fundo; "outro" nos restantes casos.
+- "tipo" (escolhe o PRIMEIRO que se aplicar, por esta ordem):
+  1. "admissibilidade": SÓ quando o acórdão decide se o próprio recurso (revista, revista excecional) pode ser admitido ou conhecido pelo STJ (ex.: dupla conforme, valor da alçada, falta de requisitos da revista excecional). Não uses este tipo só porque a palavra "admissível", "inepta" ou "permitido" aparece no sumário.
+  2. "merito": o acórdão aplica ou interpreta uma regra de direito do trabalho ou de direito civil/administrativo sobre o fundo do litígio (despedimento, retribuição, férias, procedimento disciplinar, trabalho suplementar, justa causa, caducidade, indemnização, validade de cláusulas…), mesmo que a regra seja de forma ou de prova dentro desse tema.
+  3. "processual": o acórdão decide apenas regras gerais de processo, sem relação com o tema laboral concreto (valor da causa, nulidades da sentença, ónus de impugnação da matéria de facto, poderes do STJ sobre a prova, custas).
+  4. "outro": nos restantes casos.
 - "trecho": uma citação LITERAL e curta (uma frase ou parte dela, máx. 300 caracteres) copiada do SUMÁRIO, que sustenta a solução. Copia exatamente, caracter a caracter, sem reticências nem alterações. Se o sumário não tiver solução citável, devolve "".
 - "confianca": número entre 0 e 1 (quão seguro estás de ter percebido a questão e a solução).
 
@@ -154,6 +159,19 @@ def validar(d: dict, sumario: str) -> str:
     return ""
 
 
+def aproveitar_citacao(d: dict, sumario: str, minimo: int = 60) -> bool:
+    """Se o modelo colou uma frase inventada a uma parte verdadeira do sumário, fica só com
+    o maior bloco literal (texto copiado do sumário, nunca texto do modelo). Devolve True se salvou."""
+    s, t = _norm(sumario), _norm(d.get("trecho") or "")
+    if not t:
+        return False
+    m = difflib.SequenceMatcher(None, s, t, autojunk=False).find_longest_match(0, len(s), 0, len(t))
+    if m.size < minimo:
+        return False
+    d["trecho"] = s[m.a:m.a + m.size].strip()
+    return True
+
+
 def extrair_um(r: sqlite3.Row) -> dict:
     msgs = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": montar_input(r)}]
     tin = tout = 0
@@ -172,6 +190,8 @@ def extrair_um(r: sqlite3.Row) -> dict:
         msgs = msgs[:2] + [{"role": "assistant", "content": resp["texto"]},
                            {"role": "user", "content": f"Rejeitado: {erro}. Corrige e devolve só o JSON. "
                             "O trecho tem de ser copiado literalmente do SUMÁRIO."}]
+    if erro == "trecho não é citação literal do sumário" and aproveitar_citacao(d, r["sumario"] or ""):
+        erro = validar(d, r["sumario"] or "")  # tem de passar na mesma validação
     return {"doc_id": r["doc_id"], "questao_juridica": d.get("questao_juridica"),
             "normas": json.dumps(d.get("normas", []), ensure_ascii=False), "solucao": d.get("solucao"),
             "tipo": d.get("tipo"), "trecho": d.get("trecho"), "confianca": d.get("confianca"),
