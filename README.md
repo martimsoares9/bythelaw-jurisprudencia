@@ -78,6 +78,12 @@ Um só tribunal e uma só área; erros do modelo de IA (por isso as citações s
 
 ## Como correr (recolha e filtro)
 
+**Atalho: usar a base de dados já recolhida.** `dados/acordaos.db.gz` é uma cópia comprimida da base (índice completo de 21 681 acórdãos mais os detalhes recolhidos até à data da última cópia). Para a usar sem repetir a recolha:
+
+```bash
+mkdir -p data && gzip -dk dados/acordaos.db.gz && mv dados/acordaos.db data/acordaos.db   # Windows: 7-Zip ou `python -c "import gzip,shutil;shutil.copyfileobj(gzip.open('dados/acordaos.db.gz'),open('data/acordaos.db','wb'))"`
+```
+
 Requer Python 3.11+.
 
 ```bash
