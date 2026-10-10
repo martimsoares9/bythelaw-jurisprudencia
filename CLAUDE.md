@@ -21,10 +21,11 @@ Gato, estudante de Engenharia e Ciência de Dados (FCT Coimbra), Windows, trabal
 
 ## 3. Decisões por tópico
 
-### 3.1 Subset — [PROPOSTO, fecha-se com `stats`]
+### 3.1 Subset — [DECIDIDO em 2026-10-10: STJ, 4.ª Secção, 2010–2026]
 - **Tribunal:** STJ. Critério: é onde a jurisprudência se consolida e onde as viragens de entendimento são mais relevantes; os acórdãos de uniformização de jurisprudência (AUJ) são prova externa de divergências reais, o que permite validar.
 - **Área:** secção social (direito do trabalho) = `Nº Convencional: 4.ª SECÇÃO`. Critério: situações do dia a dia (despedimento, férias, retribuição), vocabulário coerente, volume gerível.
 - **Intervalo:** 2010–2024 como ponto de partida; os dados do DGSI chegam a set/2026, por isso pode estender-se. **Decidir depois de correr `indexar` + `stats`**, com base na contagem real por ano, e escrever o critério final no README.
+- **Números reais (2026-10-10):** índice com 21 681 acórdãos (2009–2026, todas as secções). Amostra aleatória de 150: 12 são da 4.ª Secção (~8%, ~1700 no período). Filtro por descritores (`filtro_laboral.txt`): 1775 candidatos; recall na amostra 9/12 (o inicial era 8/12; amostra pequena, valor incerto). Falta a 2.ª etapa por relatores (ver README, limitação principal).
 - **Limitação a registar:** a lista do DGSI não traz a secção; o pré-filtro por descritores (regex laboral) poupa pedidos mas perde acórdãos laborais com outros descritores (recall < 100%).
 
 ### 3.2 O que se sabe do DGSI (observado em páginas reais)
@@ -34,14 +35,16 @@ Gato, estudante de Engenharia e Ciência de Dados (FCT Coimbra), Windows, trabal
 - O **texto integral** pode ser enorme (centenas de linhas com notas): para o LLM usar sumário + excerto final da decisão, não tudo.
 - **Nem todo o acórdão decide o mérito.** Exemplo real: um acórdão da "Formação" que admite uma revista excecional tem um sumário que é uma pergunta, não uma solução. Estes devem ser filtrados (`admissibilidade=1` no parser, e o LLM classifica `tipo`).
 - Os URLs/ordem podem mudar durante a recolha (entram acórdãos novos no topo e deslocam o `Start`); duplicados são inofensivos porque `doc_id` é chave primária.
-- `robots.txt`: **[ABERTO]** o utilizador ainda não reportou o conteúdo. O scraper lê-o e recusa o que for proibido; confirmar com ele antes da recolha completa.
+- `robots.txt`: **[RESOLVIDO]** o DGSI devolve 404 (não existe, sem restrições declaradas). Contacto no scraper confirmado pelo utilizador.
+- **Datas:** o servidor devolve `mm/dd/aaaa` a pedidos de fora de Portugal e `dd-mm-aaaa` nas páginas vistas em Portugal; `_data_iso` trata ambos pelo separador.
 
-### 3.3 Scraper — [DECIDIDO e escrito, ainda NÃO testado contra a rede]
+### 3.3 Scraper — [DECIDIDO, testado contra a rede em 2026-10-09/10]
 Ficheiro `scraper.py` (já existe, ver raiz do repo). Parser de acórdão e de lista **testados offline** com HTML real. Duas fases:
 - **Fase A `indexar`:** segue "Seguinte" desde `Start=1`, grava na tabela `lista` (doc_id, url, data, processo, relator, descritores). Pára ao passar de `--ate-ano`.
 - **Fase B `detalhes`:** só para os anos/descritores escolhidos, grava na tabela `acordaos` (secção, sumário, texto…).
 - Responsável: respeita robots.txt, pausa 1,5 s + jitter, cache HTML em `cache/`, retoma (PK por `doc_id`), backoff em 429/5xx, User-Agent identificado (**constante `CONTACTO` tem de ser editada pelo utilizador**).
-- Próximo passo imediato: o utilizador corre `python scraper.py indexar --max-paginas 3` e cola o output.
+- Estado: `indexar` completo (21 681 linhas). `detalhes` com `--amostra N` (aleatória, semente 42) e `--descritores @ficheiro`. Recolha dos 1775 candidatos em curso (retomável; se o proxy do ambiente mudar de porta, reiniciar o comando). `pipeline/filtrar.py` (etapa 2) escrito.
+- Próximo passo: acabar a recolha, recolher por relatores da 4.ª Secção (`python pipeline/filtrar.py relatores`), mostrar 5 exemplos, depois etapa 3 (extração por LLM; precisa de `ANTHROPIC_API_KEY` no `.env`).
 
 ### 3.4 Arquitetura — [PROPOSTO]
 ```
