@@ -30,6 +30,7 @@ Planeei o projeto com o Claude (claude.ai) e deixei tudo escrito no `CLAUDE.md`,
 | 2026-10-09 | Subset | Medir o recall do filtro por descritores (amostra de 150) | Sim | Recall 8/12, depois 9/12; ver `NOTA_DECISOES.md` 4.1 |
 | 2026-10-10 | Scraper | Recolha dos 1775 candidatos em segundo plano | Parcial | Parou por mudança de proxy; reiniciada; ver "O que não funcionou" |
 | 2026-10-10 | Subset | Recolher também por relatores da 4.ª Secção (Claude Code) | Sim | Recall na amostra 9/12 -> 12/12 (amostra pequena); ver `NOTA_DECISOES.md` 4.1 |
+| 2026-10-10 | Extração | Trocar a chave do OpenRouter e repetir o `ping` + amostra de 50 (Claude Code) | Não | A chave nova não chegou ao contentor (nenhuma variável `OPENROUTER_*`/`LLM_*` definida, sem `.env`); `ping` parou com "Sem chave". Não gastei nada. Ver "O que não funcionou" |
 
 ## O que funcionou bem
 
@@ -50,6 +51,8 @@ Planeei o projeto com o Claude (claude.ai) e deixei tudo escrito no `CLAUDE.md`,
 - **Filtro de descritores com recall baixo (~67–75% na amostra):** a IA propôs um filtro razoável, mas só a medição mostrou que perdia 1 em cada 4 acórdãos laborais. É uma limitação assumida (ver `NOTA_DECISOES.md`, 4.1).
 - **Estimativas, não medições:** os ~15 h de recolha completa e os ~1700 acórdãos da 4.ª Secção são contas minhas a partir de amostras pequenas.
 - **Extração devolvia vazio (Fase 3):** na primeira corrida de 50, 43 respostas vieram vazias ("JSON inválido"). O modelo `claude-haiku-5-5` (via OpenRouter) gastava os 700 tokens de saída a "raciocinar" antes de escrever. Custou ~0,05 USD de chamadas inúteis. Corrigi desligando o raciocínio (`reasoning: {enabled: false}`) e subindo o limite para 1000 tokens: ficou mais barato e mais rápido (0,018 USD, 34 s para 50 acórdãos).
+- **Chave não chegou à sessão (2026-10-10):** depois de trocares a `OPENROUTER_API_KEY` no ambiente, o contentor desta sessão continuou sem a variável (as variáveis do ambiente só são lidas quando a sessão começa, por isso uma sessão já aberta não as vê). Em vez de inventar resultados, parei: não foi possível confirmar o plano, os limites nem se o `claude-haiku-5-5` responde.
+- **Chave ausente outra vez (2026-10-10, 2.ª tentativa):** o contentor continua sem `OPENROUTER_API_KEY`/`LLM_*` e sem `.env` (verificado só pelos nomes das variáveis, sem imprimir valores). `ping` e a amostra de 50 não correram, gastei 0 USD. Também não consigo identificar os 2 acórdãos mal classificados: a tabela `extracoes` e a cache `cache/llm/` da corrida anterior não foram guardadas (a base em `dados/acordaos.db.gz` só tem `lista`, `acordaos`, `filtrados`). Lição: a variável tem de estar definida no ambiente *antes* de a sessão começar.
 - **"Válido" não quer dizer "correto":** a validação automática só prova que a citação (`trecho`) existe no sumário. Na amostra de 50, 100% passaram, mas ao ler os resultados vi 2 acórdãos de mérito classificados como `admissibilidade` (2017-11-09 e 2021-04-28). A taxa de acerto real só se mede com revisão manual (Fase 5).
 
 ## Validação do que a IA produziu
