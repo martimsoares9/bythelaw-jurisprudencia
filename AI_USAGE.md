@@ -9,12 +9,13 @@ o que tiveste de corrigir ou o que aprendeste.
 
 ## Ferramentas
 
-- **Claude (claude.ai):** planeamento, explicação do domínio jurídico, geração de código, resolução de erros.
-- _(acrescentar aqui outras: GitHub Copilot, Cursor, Claude Code, modelos de embeddings, API do Claude no pipeline, etc.)_
+- **Claude (claude.ai):** planeamento, explicação do domínio jurídico (acórdão, sumário, descritores), geração do scraper inicial, resolução de erros.
+- **Claude Code (agente na cloud, sobre este repositório):** corre o scraper contra o DGSI, corrige bugs, escreve o pipeline, faz commits e push. Os commits levam `Co-Authored-By: Claude`.
+- **Previstos (por usar):** API da Anthropic no pipeline (modelo barato para extração, modelo mais forte para o juiz de pares), `sentence-transformers` e HDBSCAN para os temas. **[POR FAZER — atualizar com os modelos realmente usados]**
 
 ## Fluxo de trabalho (resumo)
 
-_(Preencher no fim, em 4 a 6 linhas: como organizaste o trabalho com a IA. Exemplo: "Usei o Claude para planear e gerar o código de cada fase, testava localmente, colava os erros de volta e iterava. Dentro do pipeline, usei a API do Claude para extrair a questão jurídica e classificar divergências.")_
+Planeei o projeto com o Claude (claude.ai) e deixei tudo escrito no `CLAUDE.md`, que serve de contexto para o Claude Code, com o que está **decidido**, **proposto** e **em aberto**. Depois trabalho por fases pequenas e testáveis: o Claude Code corre o passo (recolher, contar, filtrar), mostra-me números e exemplos, e **eu decido** antes de avançar (por exemplo, aprovei eu o subset depois de ver as contagens por ano). No fim de cada fase atualiza-se o `CLAUDE.md`, faz-se commit e push. Dentro do pipeline, a API do Claude será usada para extrair a questão jurídica e classificar divergências, sempre com citações verificadas por automático. **[completar no fim com o fluxo da extração e do juiz]**
 
 ## Diário (uma linha por pedido relevante)
 
@@ -31,12 +32,23 @@ _(Preencher no fim, em 4 a 6 linhas: como organizaste o trabalho com a IA. Exemp
 
 ## O que funcionou bem
 
-- _(preencher ao longo do projeto)_
+- **Decidir com números:** indexar tudo (barato) e contar por ano antes de fixar o intervalo; medir o filtro com uma amostra aleatória em vez de supor que funcionava.
+- **Testar o parser com HTML real** (`testsexemplos/`) antes de ir à rede.
+- **Recolha retomável** (cache + chave primária por acórdão): quando a ligação falhou, bastou reiniciar sem repetir pedidos.
+- **Trabalho por fases com paragem para aprovação**, o que apanhou o problema do recall antes de gastar uma hora a recolher o filtro errado.
 
 ## O que não funcionou / limitações da IA
 
-- _(preencher ao longo do projeto: erros do LLM, alucinações, código que teve de ser reescrito, custos, etc.)_
+- **Datas vazias:** o scraper "testado offline" falhou na rede real. O DGSI devolve as datas em `mm/dd/aaaa` a pedidos de fora de Portugal; o parser só aceitava `dd-mm-aaaa`. O teste offline com HTML copiado de um browser em Portugal não revelou isto. Detetei-o porque as datas apareciam desordenadas. Lição: testar sempre contra a rede real e olhar para os dados, não só para "correu sem erros".
+- **Ambiente sem acesso ao DGSI:** a cloud começou por bloquear `dgsi.pt` (403), depois deu timeout durante dias (o site também esteve em baixo, como confirmaste), e só depois respondeu. Perdi tempo; a IA não consegue contornar uma política de rede e deve dizê-lo em vez de insistir.
+- **`.gitignore` partido:** o ficheiro original não terminava com newline, a linha que acrescentei colou-se a `cache/` e a base de dados foi parar ao git. Detetado por um hook de verificação; corrigido e removida do controlo de versões (continua no histórico, é pequena).
+- **Recolha interrompida:** a meio, o proxy do ambiente mudou de porta e o processo em segundo plano ficou a falhar com erros de rede; reiniciei. Ao reiniciar, um `pkill` apanhou o meu próprio shell (erro meu), tive de relançar.
+- **Instruções contraditórias:** o `CLAUDE.md` mandava trabalhar no `main` mas a sessão estava ligada a outro branch; só fiz push para o `main` depois de o confirmares explicitamente.
+- **Filtro de descritores com recall baixo (~67–75% na amostra):** a IA propôs um filtro razoável, mas só a medição mostrou que perdia 1 em cada 4 acórdãos laborais. É uma limitação assumida (ver `NOTA_DECISOES.md`, 4.1).
+- **Estimativas, não medições:** os ~15 h de recolha completa e os ~1700 acórdãos da 4.ª Secção são contas minhas a partir de amostras pequenas.
 
 ## Validação do que a IA produziu
 
-- _(preencher na fase das divergências: quantos casos revi à mão, taxa de acerto, exemplos de erros)_
+- **Já feito:** amostra aleatória de 150 acórdãos para medir o recall do filtro (resultado acima).
+- **[POR FAZER]** Extração por IA: % de respostas com citação válida, 50 acórdãos revistos.
+- **[POR FAZER]** Juiz de pares: teste com AUJ como verdade-terreno e 25 casos revistos à mão, com taxa de acerto e exemplos de erros.

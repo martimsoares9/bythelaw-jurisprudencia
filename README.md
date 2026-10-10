@@ -2,7 +2,17 @@
 
 Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões divergentes ao longo do tempo**, isto é, onde e quando o tribunal mudou de entendimento sobre a mesma questão. Desafio ByTheLaw; fonte: [dgsi.pt](https://www.dgsi.pt). O enunciado completo está em `ENUNCIADO.md` e o contexto de trabalho em `CLAUDE.md`.
 
-> **Estado:** em desenvolvimento. Feitas: recolha (em curso) e filtro. Por fazer: extração por IA, temas, comparação de pares, validação, app e deploy. A secção "Como correr" será completada à medida que as etapas ficarem prontas.
+> **Estado:** em desenvolvimento. Feitas: recolha (em curso) e filtro. Por fazer: extração por IA, temas, comparação de pares, validação, app e deploy.
+
+## Entregáveis do enunciado e onde estão
+
+| # | O enunciado pede | Onde está | Estado |
+|---|---|---|---|
+| 1 | Link da aplicação em produção | *(link a acrescentar aqui)* | Por fazer (app + deploy) |
+| 2 | Repositório com README que explique como correr | Este ficheiro, secção "Como correr" | Parcial (recolha e filtro; faltam os restantes passos e a app) |
+| 3 | Nota curta de decisões: subset, temas, divergências, limitações | [`NOTA_DECISOES.md`](NOTA_DECISOES.md) | Subset e limitações escritos; temas e divergências por fazer |
+| 4 | Descrição do uso de IA: ferramentas, fluxo, o que funcionou e não funcionou | [`AI_USAGE.md`](AI_USAGE.md) | Em curso (diário, falhas e fluxo já preenchidos) |
+| 5 | Vídeo curto de demonstração com narração | *(link a acrescentar aqui)* | Por fazer, depois da app |
 
 ## Pequeno glossário (sem formação jurídica)
 
