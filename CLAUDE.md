@@ -103,3 +103,8 @@ Trabalha sempre no branch main. No fim de cada tarefa, faz commit com uma mensag
   2. Atualiza este CLAUDE.md com o que foi feito, as decisões tomadas e o que falta.
   3. Faz commit e push para o `main`.
   4. Avisa-me claramente: "Fase X concluída — abre uma sessão nova para a fase seguinte."
+
+## Commits
+- Todos os commits têm de ter como autor o utilizador. No início de cada sessão corre: `git config user.name "martimsoares" && git config user.email "martimsimoes.soares@gmail.com"`.
+- Mantém-se o trailer `Co-Authored-By: Claude` (transparência sobre o uso de IA, pedida pelo enunciado), salvo indicação em contrário do utilizador.
+- Quando a recolha terminar, guardar a cópia final da base em `dados/acordaos.db.gz` (ver README). Outra cópia no fim da extração por IA. Não guardar cópias intermédias (cada uma pesa ~12 MB no histórico).
