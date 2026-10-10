@@ -108,6 +108,7 @@ Antes de entregar, **todos** os itens têm de estar marcados e nenhum texto pode
 | 1 | 2026-10-10 | Índice completo e subset aprovado | Datas em formato americano |
 | 2 | 2026-10-10 | 2972 acórdãos recolhidos; 1820 ficam depois do filtro; base guardada em `dados/acordaos.db.gz` | A recolha parou uma vez por mudança de ligação à internet; reiniciada. 2020 tinha só 18 acórdãos até se recolher por relatores |
 | 3 (parcial) | 2026-10-10 | Extração por IA em 316 dos 1820 acórdãos (pipeline/extrair.py); prompt v2 com `tipo` mais preciso | A chave gratuita ficou sem crédito (402) e os modelos gratuitos só dão 50 pedidos/dia. Falta decidir como acabar sem custos |
+| 4a (temas) | 2026-10-10 | `pipeline/agrupar.py`: 231 acórdãos de mérito agrupados em 30 temas (81 sem tema), sem custos | HuggingFace bloqueado no ambiente, por isso usei TF-IDF em vez de embeddings. O juiz de pares (4b) precisa de um modelo e a chave não tem crédito |
 
 ## 7. Palavras que vão aparecer
 
