@@ -1,7 +1,7 @@
 # Nota de decisões
 
 > Entregável do enunciado: *"uma nota curta sobre as decisões tomadas: subset escolhido, abordagem para agrupar por tema e para detetar divergências, e principais limitações"*.
-> Estado: as secções 1 e 4 (parcial) estão escritas com dados reais. As secções 2 e 3 descrevem o método **planeado** e serão confirmadas com resultados quando as etapas estiverem feitas; o que ainda não foi feito está marcado com **[POR FAZER]**.
+> Estado: as secções 1 e 4 estão escritas com dados reais. As secções 2 e 3 descrevem o método **planeado** e serão confirmadas com resultados quando as etapas estiverem feitas; o que ainda não foi feito está marcado com **[POR FAZER]**.
 
 ## 1. Subset escolhido — [FEITO]
 
@@ -10,7 +10,7 @@
 | Decisão | Critério |
 |---|---|
 | **Tribunal: STJ** | É onde a jurisprudência se consolida e onde as viragens de entendimento mais importam. Os acórdãos de uniformização de jurisprudência (AUJ) são prova externa de divergências reais, o que permite validar o sistema. |
-| **Área: 4.ª Secção (trabalho)** | Casos do dia a dia (despedimento, férias, retribuição), vocabulário coerente, volume gerível (~1700 acórdãos estimados). |
+| **Área: 4.ª Secção (trabalho)** | Casos do dia a dia (despedimento, férias, retribuição), vocabulário coerente, volume gerível (2204 acórdãos da 4.ª Secção recolhidos). |
 | **Intervalo: 2010–2026** | Escolhido depois de contar o índice real (21 681 acórdãos, todas as secções, 2009–2026): cada ano tem pelo menos algumas dezenas de acórdãos laborais e 16 anos mostram bem as mudanças de entendimento. |
 
 **Como se chegou a este subset.** Primeiro indexei toda a lista do STJ (barato: 219 páginas), contei por ano, e só depois escolhi o intervalo. Medi o peso da 4.ª Secção numa amostra aleatória de 150 acórdãos: 12 são da 4.ª Secção (~8%).
@@ -38,12 +38,19 @@ Princípio: **só se compara o que é comparável.** Duas decisões opostas sobr
 
 ## 4. Limitações
 
-**4.1 O filtro por descritores perde acórdãos laborais — [MEDIDO, parcial]**
-A lista do DGSI não mostra a secção; só se vê abrindo cada acórdão. Abrir os 21 681 seria cerca de 15 horas de pedidos contínuos (estimativa: ~2,5 s por pedido) só para descobrir que ~92% não interessam, o que contraria o "recolha responsável" do enunciado e não cabe no prazo. Por isso pré-filtro pelos descritores (palavras-chave laborais).
-- Na amostra de 150, o filtro inicial apanhava 8 dos 12 acórdãos da 4.ª Secção (~67%); alargado, 9 em 12 (75%). A amostra é pequena, o valor real é incerto.
-- Falha em acórdãos com descritores genéricos ("revista excecional") ou laborais que não previ ("descanso semanal").
-- Melhoria planeada: recolher também os acórdãos dos **relatores** que julgam quase só na 4.ª Secção. Sobe o recall, mas não chega a 100%. **[recall final: POR MEDIR]**
-- *Consequência:* o sistema vê uma boa amostra da jurisprudência laboral, não toda; uma viragem pode ficar por detetar e os números não são contagens oficiais.
+**4.1 O filtro por descritores perde acórdãos laborais — [MEDIDO]**
+A lista do DGSI não mostra a secção; só se vê abrindo cada acórdão. Abrir os 21 681 seria cerca de 15 horas de pedidos contínuos (estimativa: ~2,5 s por pedido) só para descobrir que ~92% não interessam, o que contraria o "recolha responsável" do enunciado e não cabe no prazo. Por isso a recolha foi em duas etapas:
+1. **Pré-filtro por descritores** (palavras-chave laborais, `filtro_laboral.txt`): 1775 candidatos.
+2. **Recolha por relatores:** cada juiz pertence a uma secção, por isso os 26 relatores com ≥ 4 acórdãos recolhidos e ≥ 85% deles na 4.ª Secção revelam acórdãos laborais com descritores genéricos. Recolheram-se mais 1059 acórdãos desses relatores (`relatores_4secao.txt`).
+
+**Resultado:** 2972 acórdãos recolhidos (inclui uma amostra aleatória de 150). Pertencem à 4.ª Secção 2204; destes, **1820 decidem o mérito e são o conjunto de trabalho** (322 são de admissibilidade e 62 têm sumário curto). Há 17 anos com pelo menos 39 acórdãos cada (o mais baixo é 2016, com 39; 2020 passou de 18 para 52 depois dos relatores).
+
+**Recall medido** numa amostra aleatória de 150 acórdãos (12 da 4.ª Secção): só descritores, 9/12 (75%); descritores mais relatores, 12/12.
+- **Cautela:** 12 casos é muito pouco. Com 12 em 12, o limite inferior de um intervalo de confiança a 95% é cerca de 74%, ou seja, o recall real pode ser bem menor que 100%. Além disso, a lista de relatores foi construída com os dados recolhidos, incluindo essa amostra, pelo que o valor é ligeiramente otimista.
+- O recall ficou acima do esperado, mas o número de acórdãos da 4.ª Secção (2204) é maior que a estimativa inicial de ~1700, que vinha de uma amostra de 12 casos.
+- Ainda podem faltar acórdãos de relatores que julgam em várias secções, ou que apareceram poucas vezes nos dados.
+
+*Consequência:* o sistema vê uma boa amostra da jurisprudência laboral, não toda; uma viragem pode ficar por detetar e os números não são contagens oficiais.
 
 **4.2 Outras limitações**
 - Um só tribunal e uma só área.

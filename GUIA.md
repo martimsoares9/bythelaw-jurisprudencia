@@ -25,11 +25,15 @@ A lista não diz a que secção pertence cada acórdão; isso só se vê ao abri
 O atalho não é perfeito. Testei em 150 acórdãos ao acaso: dos 12 que eram da 4.ª Secção, o filtro encontrou 8; depois de o melhorar, 9. Ou seja, **falha cerca de 1 em cada 4**. Isto é uma limitação que vamos assumir e explicar na nota.
 
 **Passo 5 — Abrir os acórdãos candidatos.**
-Dos 21 681, o filtro escolheu 1775. O programa abre cada um e copia o sumário (o resumo oficial que o próprio tribunal escreve), a secção e o texto. Demora cerca de 1 hora e está a correr.
+Dos 21 681, o filtro escolheu 1775. O programa abre cada um e copia o sumário (o resumo oficial que o próprio tribunal escreve), a secção e o texto.
 - *Erro que apareceu:* a meio, a ligação à internet do computador onde trabalho mudou e a recolha parou. Reiniciei; como o programa guarda o que já fez, continuou de onde estava.
 
+**Passo 5b — Apanhar o que o filtro perdeu (os relatores).**
+O filtro por palavras-chave deixava escapar 1 em cada 4 acórdãos laborais. Cada juiz do STJ trabalha numa secção, por isso quem escreve quase só na 4.ª Secção mostra-nos os acórdãos que faltavam. Escolhi 26 juízes assim e abri mais 1059 acórdãos deles.
+- *Resultado:* na amostra de teste o filtro passou de 9 para 12 acertos em 12, mas são só 12 casos, por isso ainda não podemos dizer que apanhamos tudo. Os detalhes estão em `NOTA_DECISOES.md`.
+
 **Passo 6 — Escrever o filtro final (`pipeline/filtrar.py`).**
-Dos acórdãos recolhidos, fica só quem é da 4.ª Secção e **decidiu o fundo da questão**. Tira os acórdãos que só decidem se um recurso pode ou não ser aceite (não dizem quem tem razão) e os de sumário demasiado curto. Marca também os "acórdãos de uniformização", que são decisões em que o STJ resolve uma divergência entre os seus próprios acórdãos. Esses vão servir-nos de resposta certa para testar o sistema.
+Dos 2972 acórdãos recolhidos, ficam **1820**: os da 4.ª Secção que **decidiram o fundo da questão**. Tira os acórdãos que só decidem se um recurso pode ou não ser aceite (não dizem quem tem razão) e os de sumário demasiado curto. Marca também os "acórdãos de uniformização", que são decisões em que o STJ resolve uma divergência entre os seus próprios acórdãos. Esses vão servir-nos de resposta certa para testar o sistema.
 
 **Passo 7 — Documentar e guardar.**
 README com o mapa dos 5 entregáveis do enunciado, `NOTA_DECISOES.md`, `AI_USAGE.md` (inclui as falhas), cópia da base de dados no repositório e o plano das fases no `CLAUDE.md`.
@@ -38,7 +42,6 @@ README com o mapa dos 5 entregáveis do enunciado, `NOTA_DECISOES.md`, `AI_USAGE
 
 | Fase | O que acontece, em simples | O que vês no fim | O que preciso de ti |
 |---|---|---|---|
-| **2. Fechar a recolha** | Acaba de abrir os candidatos. Depois procuro os juízes que quase só escrevem na 4.ª Secção e abro também os acórdãos deles que o filtro perdeu. Guardo a base final. | 5 exemplos de acórdãos e o número final de acórdãos | Esperar |
 | **3. A IA lê os sumários** | Para cada acórdão, o Claude lê o sumário e extrai: *qual é a questão*, *que lei se aplica* e *qual foi a decisão* (uma frase), mais uma citação do sumário que prova isso. Eu confirmo por programa que a citação existe mesmo no texto; se não existir, a resposta é recusada (assim apanho invenções da IA). Começa com 50 acórdãos. | Os resultados desses 50, para decidirmos se a qualidade chega antes de gastar mais | A chave da API da Anthropic num ficheiro `.env`; rever os resultados |
 | **4. Temas e comparação** | Agrupo os acórdãos que tratam da mesma questão (tema). Dentro de cada tema, o Claude compara pares de acórdãos de datas diferentes e responde: *mesma solução*, *solução oposta* ou *não comparável* (factos diferentes). "Não comparável" é uma resposta normal e importante: duas decisões opostas sobre casos diferentes **não** são uma divergência. Daí sai a "viragem": quando a maioria das decisões antes de uma data difere da maioria depois dela. | 3 temas e 3 pares classificados, incluindo um "não comparável" | Verificar se os temas fazem sentido |
 | **5. Validar** | Teste de verdade: (a) o sistema encontra as divergências que os acórdãos de uniformização já confirmam? (b) tu e eu revemos à mão 25 classificações e contamos quantas estão certas. | A taxa de acerto e exemplos de erros | Rever os 25 casos (os termos jurídicos explico-te eu) |
@@ -103,7 +106,7 @@ Antes de entregar, **todos** os itens têm de estar marcados e nenhum texto pode
 | Fase | Fechada em | O que mudou desde a anterior | Surpresas / erros |
 |---|---|---|---|
 | 1 | 2026-10-10 | Índice completo e subset aprovado | Datas em formato americano |
-| 2 | *em curso* | | A recolha parou uma vez por mudança de ligação à internet; reiniciada |
+| 2 | 2026-10-10 | 2972 acórdãos recolhidos; 1820 ficam depois do filtro; base guardada em `dados/acordaos.db.gz` | A recolha parou uma vez por mudança de ligação à internet; reiniciada. 2020 tinha só 18 acórdãos até se recolher por relatores |
 
 ## 7. Palavras que vão aparecer
 

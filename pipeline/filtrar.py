@@ -78,9 +78,11 @@ def main():
             print(f"  {ano}: {n:4}  (AUJ: {auj})")
     elif cmd == "exemplos":
         con.row_factory = sqlite3.Row
-        for r in con.execute("""SELECT a.processo,a.data_acordao,a.relator,a.descritores,a.sumario,a.url
+        # 5 acórdãos espalhados no tempo (determinístico): um em cada quinto da lista por data
+        todos = con.execute("""SELECT a.processo,a.data_acordao,a.relator,a.descritores,a.sumario,a.url
                 FROM acordaos a JOIN filtrados f USING(doc_id) WHERE f.motivo_exclusao=''
-                ORDER BY a.doc_id LIMIT 5"""):
+                ORDER BY a.data_acordao""").fetchall()
+        for r in [todos[(2 * i + 1) * len(todos) // 10] for i in range(5)]:
             print(f"\n=== {r['processo']} | {r['data_acordao']} | {r['relator']}\n"
                   f"Descritores: {r['descritores']}\nSumário: {r['sumario'][:600]}…\n{r['url']}")
     elif cmd == "relatores":

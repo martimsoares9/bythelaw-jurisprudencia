@@ -29,6 +29,7 @@ Planeei o projeto com o Claude (claude.ai) e deixei tudo escrito no `CLAUDE.md`,
 | 2026-10-09 | Setup | Commit da base de dados e cache | Não | `.gitignore` partido; ver "O que não funcionou" |
 | 2026-10-09 | Subset | Medir o recall do filtro por descritores (amostra de 150) | Sim | Recall 8/12, depois 9/12; ver `NOTA_DECISOES.md` 4.1 |
 | 2026-10-10 | Scraper | Recolha dos 1775 candidatos em segundo plano | Parcial | Parou por mudança de proxy; reiniciada; ver "O que não funcionou" |
+| 2026-10-10 | Subset | Recolher também por relatores da 4.ª Secção (Claude Code) | Sim | Recall na amostra 9/12 -> 12/12 (amostra pequena); ver `NOTA_DECISOES.md` 4.1 |
 
 ## O que funcionou bem
 
@@ -36,6 +37,8 @@ Planeei o projeto com o Claude (claude.ai) e deixei tudo escrito no `CLAUDE.md`,
 - **Testar o parser com HTML real** (`testsexemplos/`) antes de ir à rede.
 - **Recolha retomável** (cache + chave primária por acórdão): quando a ligação falhou, bastou reiniciar sem repetir pedidos.
 - **Trabalho por fases com paragem para aprovação**, o que apanhou o problema do recall antes de gastar uma hora a recolher o filtro errado.
+
+- **Usar os relatores como sinal da secção** subiu o recall na amostra de 9/12 para 12/12, uma ideia que o filtro de descritores sozinho não tinha.
 
 ## O que não funcionou / limitações da IA
 

@@ -2,7 +2,7 @@
 
 Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões divergentes ao longo do tempo** (onde e quando o tribunal mudou de entendimento). Desafio ByTheLaw; fonte: [dgsi.pt](https://www.dgsi.pt). Subset: STJ, 4.ª Secção, 2010–2026.
 
-> **Estado:** em desenvolvimento (recolha e filtro feitos; faltam extração por IA, temas, comparação, validação, app e deploy).
+> **Estado:** em desenvolvimento (recolha e filtro feitos, 1820 acórdãos de trabalho; faltam extração por IA, temas, comparação, validação, app e deploy).
 
 ## Entregáveis do enunciado e onde estão
 
@@ -26,6 +26,7 @@ Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões diver
 | `ENUNCIADO.md` | O enunciado original do desafio |
 | `scraper.py` | Programa que lê o DGSI e guarda numa base SQLite (`indexar`, `detalhes`, `stats`) |
 | `filtro_laboral.txt` | Palavras-chave laborais usadas para escolher que acórdãos abrir (lido pelo scraper) |
+| `relatores_4secao.txt` | Relatores que julgam quase só na 4.ª Secção, usados na 2.ª etapa da recolha |
 | `pipeline/filtrar.py` | Etapa 2: fica só com a 4.ª Secção e decisões de mérito; marca os AUJ |
 | `testsexemplos/` | HTML de exemplo (um acórdão e uma lista) para testar o parser sem rede |
 | `dados/acordaos.db.gz` | Cópia comprimida da base de dados recolhida |
@@ -45,6 +46,9 @@ python scraper.py stats --descritores @filtro_laboral.txt     # contagens por an
 
 # 2) Abrir os acórdãos candidatos (~1 h, retomável)
 python scraper.py detalhes --ano-min 2010 --ano-max 2026 --descritores @filtro_laboral.txt --limite 100000
+
+# 2b) Acórdãos dos relatores da 4.ª Secção que o filtro perdeu (~45 min, retomável)
+python scraper.py detalhes --ano-min 2010 --ano-max 2026 --relatores relatores_4secao.txt --limite 100000
 
 # 3) Filtrar: 4.ª Secção + mérito
 python pipeline/filtrar.py            # contagens
