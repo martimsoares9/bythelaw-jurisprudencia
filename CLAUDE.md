@@ -108,3 +108,20 @@ Trabalha sempre no branch main. No fim de cada tarefa, faz commit com uma mensag
 - Todos os commits têm de ter como autor o utilizador. No início de cada sessão corre: `git config user.name "martimsoares" && git config user.email "martimsimoes.soares@gmail.com"`.
 - Mantém-se o trailer `Co-Authored-By: Claude` (transparência sobre o uso de IA, pedida pelo enunciado), salvo indicação em contrário do utilizador.
 - Quando a recolha terminar, guardar a cópia final da base em `dados/acordaos.db.gz` (ver README). Outra cópia no fim da extração por IA. Não guardar cópias intermédias (cada uma pesa ~12 MB no histórico).
+
+## Plano de trabalho por fases e estado (atualizar no fim de cada fase)
+As 4 fases gerais acima desdobram-se em 7 fases de trabalho. Em cada uma: mostrar o resultado ao utilizador (contagens, exemplos) e **esperar a confirmação** antes de avançar. No fim de cada fase, resumir em 3 linhas o que foi feito e o que se precisa do utilizador.
+
+| Fase | O que fazer | Mostrar ao utilizador | Estado |
+|---|---|---|---|
+| 1. Recolha | `indexar` + `stats`; propor subset com critério; só depois `detalhes` em volume | Contagem real por ano, subset proposto | **Feita** (subset aprovado: STJ, 4.ª Secção, 2010–2026) |
+| 2. Filtrar | `pipeline/filtrar.py`: 4.ª Secção + mérito. Recolher também por relatores da 4.ª Secção (`python pipeline/filtrar.py relatores`) para subir o recall | 5 exemplos, contagens finais, recall final | **Em curso**: recolha dos 1775 candidatos a correr; falta recolha por relatores, 5 exemplos e cópia final da base em `dados/acordaos.db.gz` |
+| 3. Extração por LLM | JSON estrito (`questao_juridica`, `normas`, `solucao`, `tipo`, `trecho`, `confianca`); `trecho` tem de ser substring do sumário; cache das respostas por hash do input; chave só em `.env` (`ANTHROPIC_API_KEY`) | Resultados de uma amostra de **50 acórdãos** antes de escalar | Por fazer |
+| 4. Temas e juiz de pares | Agrupamento por tema (embeddings da questão + normas, HDBSCAN) e juiz de pares (`mesma_solucao`/`solucao_oposta`/`nao_comparavel`) conforme a secção 3.5 | **3 temas** e **3 pares** classificados, incluindo um "não comparável" | Por fazer |
+| 5. Validação | AUJ da 4.ª Secção como verdade-terreno + **25 casos revistos à mão**; registar taxa de acerto e erros | Taxa de acerto, exemplos de erros | Por fazer |
+| 6. App | Streamlit que lê um ficheiro de dados já exportado (sem chamar LLM nem DGSI); **deploy cedo** | Link da app | Por fazer |
+| 7. Entrega | README (como correr, subset e critério, recolha responsável, limitações), `NOTA_DECISOES.md`, `AI_USAGE.md` (o que funcionou e o que falhou), link e vídeo | — | Em curso (documentos já com o que foi feito) |
+
+**Onde está cada coisa:** contexto e decisões em `CLAUDE.md`; entregáveis do enunciado mapeados na tabela no topo do `README.md`; decisões e limitações em `NOTA_DECISOES.md`; uso de IA em `AI_USAGE.md`; código em `scraper.py` e `pipeline/`.
+
+**Prazo:** 12 dias a contar de 2026-10-03; o utilizador definiu 6 dias de trabalho em 2026-10-10.
