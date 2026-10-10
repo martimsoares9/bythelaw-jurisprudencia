@@ -49,9 +49,11 @@ Planeei o projeto com o Claude (claude.ai) e deixei tudo escrito no `CLAUDE.md`,
 - **Instruções contraditórias:** o `CLAUDE.md` mandava trabalhar no `main` mas a sessão estava ligada a outro branch; só fiz push para o `main` depois de o confirmares explicitamente.
 - **Filtro de descritores com recall baixo (~67–75% na amostra):** a IA propôs um filtro razoável, mas só a medição mostrou que perdia 1 em cada 4 acórdãos laborais. É uma limitação assumida (ver `NOTA_DECISOES.md`, 4.1).
 - **Estimativas, não medições:** os ~15 h de recolha completa e os ~1700 acórdãos da 4.ª Secção são contas minhas a partir de amostras pequenas.
+- **Extração devolvia vazio (Fase 3):** na primeira corrida de 50, 43 respostas vieram vazias ("JSON inválido"). O modelo `claude-haiku-5-5` (via OpenRouter) gastava os 700 tokens de saída a "raciocinar" antes de escrever. Custou ~0,05 USD de chamadas inúteis. Corrigi desligando o raciocínio (`reasoning: {enabled: false}`) e subindo o limite para 1000 tokens: ficou mais barato e mais rápido (0,018 USD, 34 s para 50 acórdãos).
+- **"Válido" não quer dizer "correto":** a validação automática só prova que a citação (`trecho`) existe no sumário. Na amostra de 50, 100% passaram, mas ao ler os resultados vi 2 acórdãos de mérito classificados como `admissibilidade` (2017-11-09 e 2021-04-28). A taxa de acerto real só se mede com revisão manual (Fase 5).
 
 ## Validação do que a IA produziu
 
 - **Já feito:** amostra aleatória de 150 acórdãos para medir o recall do filtro (resultado acima).
-- **[POR FAZER]** Extração por IA: % de respostas com citação válida, 50 acórdãos revistos.
+- **Extração por IA, amostra de 50 (2026-10-10):** 50/50 com citação literal válida; 38 mérito, 9 processual, 3 admissibilidade; confiança média 0,86; 10 sem normas; custo 0,00036 USD/acórdão (≈ 0,66 USD para os 1820). **[POR FAZER]** revisão manual dos 50 para medir o acerto real.
 - **[POR FAZER]** Juiz de pares: teste com AUJ como verdade-terreno e 25 casos revistos à mão, com taxa de acerto e exemplos de erros.
