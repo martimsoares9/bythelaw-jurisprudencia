@@ -45,20 +45,19 @@ README com o mapa dos 5 entregáveis do enunciado, `NOTA_DECISOES.md`, `AI_USAGE
 | **6. A aplicação** | Uma página web: escolhes um tema, vês os acórdãos numa linha do tempo com a viragem assinalada, dois acórdãos lado a lado com a citação, e o link para o original. Tem um aviso visível de que a classificação é automática e pode ter erros. A página não chama a IA nem o DGSI; lê só um ficheiro já preparado. Publica-se cedo, não no fim. | O link da aplicação | Criar a conta no serviço de alojamento (Streamlit Community Cloud ou Hugging Face) |
 | **7. Entrega** | Fechar o README ("como correr"), a nota de decisões, a descrição do uso de IA e o vídeo de demonstração com a tua narração. | Os 5 entregáveis completos | Gravar o vídeo |
 
-## 4. Calendário (6 dias de trabalho a partir de 2026-10-10)
-
-> Confirma a data limite exata de entrega: o enunciado diz "12 dias a contar de agora" e o email original tem a data.
+## 4. Calendário (entrega até **2026-10-15**)
 
 | Dia | Foco |
 |---|---|
-| 1 (10-10) | Fase 2: fechar a recolha |
-| 2 | Fase 3: extração por IA (50, depois todos) |
-| 3 | Fase 4: temas e comparação de pares |
-| 4 | Fase 5: validação; começar a app |
-| 5 | Fase 6: app e deploy |
-| 6 | Fase 7: README, nota, uso de IA, vídeo |
+| 1 — sáb. 10-10 | Fase 2: fechar a recolha |
+| 2 — dom. 10-11 | Fase 3: extração por IA (50, depois todos) |
+| 3 — seg. 10-12 | Fase 4: temas e comparação de pares |
+| 4 — ter. 10-13 | Fase 5: validação; começar a app |
+| 5 — qua. 10-14 | Fase 6: app e deploy; começar README, nota e vídeo |
+| 6 — qui. 10-15 | Fase 7: fechar README, nota, uso de IA, gravar o vídeo e **entregar** |
 
-Se um dia derrapar, o que se corta primeiro é o polimento da app, **nunca** a validação nem a documentação, porque o enunciado pede que fundamentes as decisões.
+O dia 15 é o dia da entrega, por isso não tem folga: se algo derrapar, o risco é entregar incompleto. Por isso a app deve estar online no dia 14, e o vídeo gravado no dia 15 de manhã. O enunciado dá pontos extra por entregar antes do prazo.
+Se um dia derrapar, corta-se primeiro o polimento da app, **nunca** a validação nem a documentação, porque o enunciado pede que fundamentes as decisões.
 
 ## 5. Diário do guia (atualizar no fim de cada fase)
 
