@@ -335,19 +335,22 @@ def cmd_detalhes(a):
     con, cli = abrir_db(), Cliente()
     rx = _regex_desc(a.descritores)
     cand = con.execute(
-        """SELECT doc_id,url,descritores FROM lista
+        """SELECT doc_id,url,descritores,relator FROM lista
            WHERE data_acordao BETWEEN ? AND ?
              AND doc_id NOT IN (SELECT doc_id FROM acordaos)
            ORDER BY data_acordao DESC""",
         (f"{a.ano_min}-01-01", f"{a.ano_max}-12-31")).fetchall()
     if rx:
         cand = [c for c in cand if rx.search(c[2] or "")]
+    if a.relatores:  # 2.ª etapa: relatores que julgam quase só na 4.ª Secção (um por linha)
+        rels = set(Path(a.relatores).read_text(encoding="utf-8").splitlines())
+        cand = [c for c in cand if c[3] in rels]
     if a.amostra:  # amostra aleatória reprodutível (para medir o recall do filtro)
         random.Random(42).shuffle(cand)
         a.limite = a.amostra
     print(f"{len(cand)} acórdãos por recolher no filtro; a recolher até {a.limite}.")
     novos = 0
-    for doc_id, url, _ in cand:
+    for doc_id, url, _, _ in cand:
         if novos >= a.limite:
             break
         if recolher_doc(cli, con, doc_id, url):
@@ -374,6 +377,7 @@ def main():
     p.add_argument("--ano-max", type=int, default=2026)
     p.add_argument("--descritores", help="regex a aplicar aos descritores (pré-filtro)")
     p.add_argument("--amostra", type=int, help="recolhe N acórdãos aleatórios (semente 42)")
+    p.add_argument("--relatores", help="ficheiro com relatores (um por linha): recolhe só os acórdãos destes")
     p.add_argument("--limite", type=int, default=20); p.set_defaults(f=cmd_detalhes)
     a = ap.parse_args()
     a.f(a)
