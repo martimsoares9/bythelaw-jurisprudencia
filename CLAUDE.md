@@ -111,3 +111,4 @@ Trabalha sempre no branch main. No fim de cada tarefa, faz commit com uma mensag
 
 ## Plano de trabalho por fases e estado
 O plano das 7 fases (o que fazer, o que mostrar ao utilizador em cada uma, o que se precisa dele), o calendário (entrega até **2026-10-15**) e o estado atual estão em **`GUIA.md`** (secções 3, 4, 5 e 6). Em cada fase: mostrar o resultado e **esperar a confirmação** antes de avançar; no fim, resumir em 3 linhas o que foi feito e o que se precisa do utilizador. Fase 2 (em curso): falta acabar a recolha, recolher por relatores (`python pipeline/filtrar.py relatores`), mostrar 5 exemplos e guardar a base final em `dados/acordaos.db.gz`.
+- No fim de cada fase, atualizar o `GUIA.md`: marcar a checklist (secção 5), acrescentar a linha ao diário (secção 6) e rever o estado das fases (secção 3). É o guia em linguagem simples do utilizador, que não tem formação jurídica nem em IA.
