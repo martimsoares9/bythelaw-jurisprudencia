@@ -88,6 +88,10 @@ def chamar(messages: list[dict], max_tokens: int = 1000) -> dict:
         try:
             r = requests.post(f"{BASE_URL}/chat/completions", json=corpo, timeout=120,
                               headers={"Authorization": f"Bearer {CHAVE}"})
+            if r.status_code == 429 and "per-day" in r.text:
+                # Limite diário da conta gratuita: esperar não adianta, parar com mensagem clara.
+                sys.exit("Limite diário de modelos gratuitos atingido (o que já foi extraído fica guardado). "
+                         "Volta a correr amanhã ou usa um modelo pago.")
             if r.status_code in (429, 500, 502, 503, 529):
                 time.sleep(2 ** tentativa + random.random())
                 continue
