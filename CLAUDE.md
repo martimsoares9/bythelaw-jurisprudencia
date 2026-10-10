@@ -125,3 +125,4 @@ As 4 fases gerais acima desdobram-se em 7 fases de trabalho. Em cada uma: mostra
 **Onde está cada coisa:** contexto e decisões em `CLAUDE.md`; entregáveis do enunciado mapeados na tabela no topo do `README.md`; decisões e limitações em `NOTA_DECISOES.md`; uso de IA em `AI_USAGE.md`; código em `scraper.py` e `pipeline/`.
 
 **Prazo:** 12 dias a contar de 2026-10-03; o utilizador definiu 6 dias de trabalho em 2026-10-10.
+- No fim de cada fase, atualizar também `GUIA.md` (secção 5 e o estado das fases): é o guia em linguagem simples do utilizador, que não tem formação jurídica nem em IA.

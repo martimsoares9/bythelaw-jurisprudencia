@@ -14,6 +14,8 @@ Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões diver
 | 4 | Descrição do uso de IA: ferramentas, fluxo, o que funcionou e não funcionou | [`AI_USAGE.md`](AI_USAGE.md) | Em curso (diário, falhas e fluxo já preenchidos) |
 | 5 | Vídeo curto de demonstração com narração | *(link a acrescentar aqui)* | Por fazer, depois da app |
 
+> **Para perceber o projeto em linguagem simples:** ver [`GUIA.md`](GUIA.md) (o que foi feito, o que falta, calendário).
+
 ## Pequeno glossário (sem formação jurídica)
 
 - **Jurisprudência:** o conjunto das decisões dos tribunais.
