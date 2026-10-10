@@ -38,6 +38,15 @@ Dos 2972 acórdãos recolhidos, ficam **1820**: os da 4.ª Secção que **decidi
 **Passo 7 — Documentar e guardar.**
 README com o mapa dos 5 entregáveis do enunciado, `NOTA_DECISOES.md`, `AI_USAGE.md` (inclui as falhas), cópia da base de dados no repositório e o plano das fases no `CLAUDE.md`.
 
+## Resumo em 4 passos (estado em 2026-10-10)
+
+1. **Recolher os acórdãos do site.** ✅ Feito: 1820 acórdãos de trabalho.
+2. **A IA lê cada acórdão e escreve uma ficha** (qual é o assunto, qual foi a decisão). 🟡 Feita para **316** dos 1820. Parou porque a chave da IA ficou sem crédito. Não te cobraram nada.
+3. **Juntar os acórdãos por assunto.** ✅ Feito: 30 assuntos (por exemplo, despedimento por justa causa).
+4. **Comparar acórdãos do mesmo assunto de anos diferentes** e ver se o tribunal mudou de opinião. ⏳ Em curso, com o limite gratuito de 50 pedidos por dia.
+
+**Plano pequeno e honesto:** 316 acórdãos em vez de 1820, e comparações só em 2 ou 3 assuntos bem validados. A limitação fica escrita na nota de decisões.
+
 ## 3. O que falta fazer, fase a fase
 
 | Fase | O que acontece, em simples | O que vês no fim | O que preciso de ti |

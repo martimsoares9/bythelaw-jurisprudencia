@@ -75,9 +75,9 @@ def _hash(*partes) -> str:
     return hashlib.sha256("\x1f".join(partes).encode()).hexdigest()
 
 
-def chamar(messages: list[dict], max_tokens: int = 1000) -> dict:
+def chamar(messages: list[dict], max_tokens: int = 1000, modelo: str | None = None) -> dict:
     """Chamada ao LLM com cache em disco, backoff e contagem de tokens/custo."""
-    corpo = {"model": MODELO, "messages": messages, "max_tokens": max_tokens, "temperature": 0,
+    corpo = {"model": modelo or MODELO, "messages": messages, "max_tokens": max_tokens, "temperature": 0,
              # Sem "raciocínio": com ele o modelo gastava os tokens todos a pensar e devolvia vazio.
              "reasoning": {"enabled": False}}
     chave_cache = _hash(BASE_URL, json.dumps(corpo, sort_keys=True, ensure_ascii=False))
