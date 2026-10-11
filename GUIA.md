@@ -43,7 +43,7 @@ README com o mapa dos 5 entregáveis do enunciado, `NOTA_DECISOES.md`, `AI_USAGE
 1. **Recolher os acórdãos do site.** ✅ Feito: 1820 acórdãos de trabalho.
 2. **A IA lê cada acórdão e escreve uma ficha** (qual é o assunto, qual foi a decisão). 🟡 Feita para **316** dos 1820. Parou porque a chave da IA ficou sem crédito. Não te cobraram nada.
 3. **Juntar os acórdãos por assunto.** ✅ Feito: 30 assuntos (por exemplo, despedimento por justa causa).
-4. **Comparar acórdãos do mesmo assunto de anos diferentes** e ver se o tribunal mudou de opinião. ⏳ Em curso, com o limite gratuito de 50 pedidos por dia.
+4. **Comparar acórdãos do mesmo assunto de anos diferentes** e ver se o tribunal mudou de opinião. 🟡 Primeira tentativa feita (28 pares): nenhuma divergência. Falta escolher melhor os pares.
 
 **Plano pequeno e honesto:** 316 acórdãos em vez de 1820, e comparações só em 2 ou 3 assuntos bem validados. A limitação fica escrita na nota de decisões.
 
@@ -118,6 +118,7 @@ Antes de entregar, **todos** os itens têm de estar marcados e nenhum texto pode
 | 2 | 2026-10-10 | 2972 acórdãos recolhidos; 1820 ficam depois do filtro; base guardada em `dados/acordaos.db.gz` | A recolha parou uma vez por mudança de ligação à internet; reiniciada. 2020 tinha só 18 acórdãos até se recolher por relatores |
 | 3 (parcial) | 2026-10-10 | Extração por IA em 316 dos 1820 acórdãos (pipeline/extrair.py); prompt v2 com `tipo` mais preciso | A chave gratuita ficou sem crédito (402) e os modelos gratuitos só dão 50 pedidos/dia. Falta decidir como acabar sem custos |
 | 4a (temas) | 2026-10-10 | `pipeline/agrupar.py`: 231 acórdãos de mérito agrupados em 30 temas (81 sem tema), sem custos | HuggingFace bloqueado no ambiente, por isso usei TF-IDF em vez de embeddings. O juiz de pares (4b) precisa de um modelo e a chave não tem crédito |
+| 4b (pares) | 2026-10-11 | `pipeline/comparar.py`: 28 pares comparados (3 temas), modelo gratuito: 22 válidos, 3 "mesma solução", 19 "não comparável", **0 divergências** | O tema "justa causa" é feito de casos diferentes (faltas, agressão, empréstimo), por isso "não comparável" é a resposta certa. 6 respostas recusadas por citação não literal. Falta apanhar divergências a sério (ver próximo passo) |
 
 ## 7. Palavras que vão aparecer
 
