@@ -85,7 +85,7 @@ Antes de entregar, **todos** os itens têm de estar marcados e nenhum texto pode
 - [ ] Apresentação dos resultados: app web em Streamlit (Fase 6)
 
 **O que enviar**
-- [ ] 1. Link da app em produção (Fase 6) — plano B se o deploy falhar: app local + instruções + vídeo, explicado na nota
+- [x] 1. Link da app em produção (Fase 6): https://divergencias-stj.streamlit.app/ — plano B se o deploy falhar: app local + instruções + vídeo, explicado na nota
 - [ ] 2. Link do repositório (já público) + README com "como correr" completo, incluindo extração, temas e app
 - [ ] 3. Nota de decisões completa: subset, temas, divergências, limitações — sem etiquetas "POR FAZER"
 - [ ] 4. Descrição do uso de IA completa: ferramentas e modelos realmente usados, fluxo, o que funcionou, o que falhou, validação
@@ -101,7 +101,7 @@ Antes de entregar, **todos** os itens têm de estar marcados e nenhum texto pode
 
 **O que só tu podes fazer**
 - [ ] Criar a chave da API da Anthropic e pô-la no `.env` (antes da Fase 3)
-- [ ] Criar a conta de alojamento da app (Streamlit Community Cloud ou Hugging Face), até 10-13
+- [x] Criar a conta de alojamento da app (Streamlit Community Cloud ou Hugging Face), até 10-13
 - [x] Rever 25 classificações na Fase 5 (feito: 18 C, 5 D, 2 ?)
 - [ ] Gravar o vídeo (10-15 de manhã) e fazer a entrega
 
@@ -123,6 +123,7 @@ Antes de entregar, **todos** os itens têm de estar marcados e nenhum texto pode
 | 6 (app, versão 1) | 2026-10-13 | `app/app.py` (Streamlit) + `pipeline/exportar.py` -> `app/dados.json`: assunto, linha do tempo com arcos e AUJ, divergência lado a lado com citações, link para o DGSI, aviso de IA | Falta publicar (Streamlit Community Cloud) e criar a tua conta lá |
 | 6b (app, versão 2) | 2026-10-13 | Nomes legíveis dos 30 assuntos, pesquisa por palavra, viragem automática (`pipeline/viragens.py`); README e nota de decisões com resultados reais | A divergência de 2011 sai como "isolada" (poucos acórdãos de cada lado) |
 | 5 (revisão manual) | 2026-10-13 | 25 veredictos revistos: 18 C, 5 D, 2 ?; acerto 78% (18/23) | Os 5 erros são todos "não comparável" a mais: a IA é conservadora. Revisor sem formação jurídica |
+| 6c (deploy) | 2026-10-13 | App publicada em https://divergencias-stj.streamlit.app/ e verificada pelo autor (8 pontos: abre, aviso de IA, 31 assuntos, métricas, linha do tempo, divergência de 2011, pesquisa, telemóvel) | A app gratuita adormece após cerca de 12 h sem visitas: abri-la antes de gravar o vídeo e de entregar |
 
 ## 7. Palavras que vão aparecer
 

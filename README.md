@@ -2,13 +2,13 @@
 
 Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões divergentes ao longo do tempo** (onde e quando o tribunal mudou de entendimento). Desafio ByTheLaw; fonte: [dgsi.pt](https://www.dgsi.pt). Subset: STJ, 4.ª Secção, 2010–2026.
 
-> **Estado (2026-10-13):** recolha (1820 acórdãos de trabalho), fichas por IA (370), temas (30), comparação de pares e app feitos. Faltam o link de produção e o vídeo.
+> **Estado (2026-10-13):** recolha (1820 acórdãos de trabalho), fichas por IA (370), temas (30), comparação de pares e app feitos. Falta o vídeo.
 
 ## Entregáveis do enunciado e onde estão
 
 | # | O enunciado pede | Onde está | Estado |
 |---|---|---|---|
-| 1 | Link da aplicação em produção | *(link a acrescentar aqui)* | Por fazer |
+| 1 | Link da aplicação em produção | [https://divergencias-stj.streamlit.app/](https://divergencias-stj.streamlit.app/) | Feito (Streamlit Community Cloud; se estiver a dormir, clicar em "Yes, get this app back up!") |
 | 2 | Repositório com README que explique como correr | Este ficheiro, secção "Como correr" | Feito |
 | 3 | Nota curta de decisões | [`NOTA_DECISOES.md`](NOTA_DECISOES.md) | Subset, temas, divergências, revisão manual (acerto 78%) e limitações escritos |
 | 4 | Descrição do uso de IA | [`AI_USAGE.md`](AI_USAGE.md) | Em curso |
