@@ -19,3 +19,8 @@ caso,a_doc,b_doc,veredicto_ia,resposta_revisor,nota
 18,18d0238d2eedd64980258dff003679e8,912c7ab022d3f44180258e0a0049b080,nao_comparavel,D,revisor: são comparáveis; o veredicto 'não comparável' da IA está errado (confirmado)
 19,ced3515228871b228025772700331757,27b3381360ac41e680257757003c21d3,nao_comparavel,C,
 20,df5c1fda34277038802579f00051c52b,5b7692ff3d9e33e3802579fb002df373,nao_comparavel,D,revisor: ambos dizem o mesmo
+21,dc063c8373fffba6802579370053d31b,af3a04082a88a2d48025794c003f36a1,nao_comparavel,D,revisor: é comparável porque ambos dizem o mesmo
+22,1e99adca15067e2d802586640035e602,87a6e7c638bd213e802586410041d19f,nao_comparavel,C,
+23,76613bae5ad5272980258816003cb3be,9bdf84d610a82fd0802588b70043fb27,nao_comparavel,C,
+24,0c39d712d126680b8025868d003de4ae,050db1ac33d04c7680258ba400562b5d,nao_comparavel,C,
+25,1101007c36ecdda08025780e005368ed,1822440e29ddb49c80257d500037b105,nao_comparavel,C,

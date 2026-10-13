@@ -1,7 +1,7 @@
 # Nota de decisões
 
 > Entregável do enunciado: *"uma nota curta sobre as decisões tomadas: subset escolhido, abordagem para agrupar por tema e para detetar divergências, e principais limitações"*.
-> Estado a 2026-10-13: subset, temas e deteção de divergências estão feitos e medidos; a revisão manual de 25 classificações está **[POR FAZER]**.
+> Estado a 2026-10-13: subset, temas e deteção de divergências estão feitos e medidos; a revisão manual de 25 classificações está feita (secção 3).
 
 ## 1. Subset escolhido — [FEITO]
 
@@ -25,7 +25,7 @@
 
 *Porquê assim:* o sumário é o campo mais denso e fiável; agrupar pela questão e não pelo texto todo evita juntar acórdãos só por partilharem factos. **Desvio do plano:** o plano era usar *embeddings* (sentence-transformers) e HDBSCAN, mas o HuggingFace está bloqueado no ambiente de trabalho; TF-IDF é mais simples, gratuito e deu temas legíveis. Revi à mão dois temas: "justa causa" está coerente; "subsídio de Natal e férias" mistura duas questões próximas.
 
-## 3. Detetar divergências — [FEITO, validação manual por fazer]
+## 3. Detetar divergências — [FEITO]
 
 Princípio: **só se compara o que é comparável.** Duas decisões opostas sobre factos diferentes não são uma divergência.
 
@@ -37,7 +37,20 @@ Princípio: **só se compara o que é comparável.** Duas decisões opostas sobr
 
 **Honestidade sobre o resultado:** uma divergência em 55 pares válidos é pouco. Em 44 dos 55 a IA respondeu "não comparável" porque o tema é largo e junta subquestões; isso mostra que o cuidado de não forçar divergências funciona, mas também que a cobertura é baixa. Um método melhor compararia cada acórdão com os mais parecidos (não só o seguinte) e usaria temas mais estreitos; ficou por falta de pedidos (ver 4.3).
 
-**Ainda por fazer:** [POR FAZER] revisão manual de 25 classificações com a taxa de acerto e exemplos de erros.
+**Revisão manual de 25 veredictos do juiz de pares** (`revisao/CASOS.md`, respostas em `revisao/respostas.csv`). Escolheram-se ao acaso (semente fixa) 1 par de solução oposta, 8 de mesma solução e 16 de não comparável. O revisor (o autor, sem formação jurídica, apoiado por resumos em linguagem simples) respondeu *concordo*, *discordo* ou *não sei*:
+
+| Veredicto da IA | Casos | Concordo | Discordo | Não sei |
+|---|---|---|---|---|
+| Solução oposta | 1 | 1 | 0 | 0 |
+| Mesma solução | 8 | 7 | 0 | 1 |
+| Não comparável | 16 | 10 | 5 | 1 |
+| **Total** | **25** | **18** | **5** | **2** |
+
+**Taxa de acerto: 18 de 23 (78%)** nos casos em que houve opinião (intervalo de confiança a 95% entre 58% e 90%, amplo porque são só 23 casos).
+
+**Padrão de erro.** Os 5 desacordos são todos "não comparável" que o revisor considera comparáveis, por haver a mesma questão e a mesma conclusão (casos 5, 17, 18, 20 e 21). Exemplo (caso 18): os dois acórdãos de 2026 concluem que o empregador responde de forma agravada, mas a IA diz "não comparável" porque só um cita o AUJ n.º 6/2024. Não houve nenhum "mesma solução" nem "solução oposta" contestado. Em suma, **a IA é conservadora: perde divergências e igualdades (menor cobertura) em vez de inventar divergências (falsos positivos)**, o que é coerente com termos encontrado apenas uma divergência.
+
+**Cautelas.** Só há 1 caso de solução oposta, por isso a fiabilidade desse veredicto, o mais importante, não se mede aqui; a revisão tem um só revisor, sem jurista; e o revisor viu a leitura do assistente, o que pode ter enviesado algumas respostas.
 
 ## 4. Limitações
 
@@ -73,7 +86,7 @@ A lista do DGSI não mostra a secção; só se vê abrindo cada acórdão. Abrir
 - **A amostra de fichas não é aleatória.** Cerca de 316 foram escolhidas ao acaso, mas 42 foram escolhidas de propósito (o tema do AUJ n.º 6/2024, por expressão regular) e 12 vieram depois ao acaso. Por isso o tema do AUJ tem muito mais acórdãos do que os outros, e os números de divergências **não são uma taxa do tribunal inteiro**.
 - **A validação assenta num só AUJ.** Encontrar a divergência que um AUJ resolveu é um bom sinal, mas é um caso; não permite falar de taxa de deteção.
 - **O juiz de pares foi um modelo gratuito** (`nvidia/nemotron-3-super-120b-a12b:free`) e não o modelo mais forte previsto no plano (sem crédito). Pode errar mais; as citações verificadas limitam as invenções, não os erros de interpretação.
-- **Sem jurista.** As classificações foram revistas por quem fez o projeto, que não tem formação jurídica, com ajuda da IA; não substitui a revisão de um jurista. A taxa de acerto da revisão está na secção 3 quando estiver feita.
+- **Sem jurista.** As classificações foram revistas por quem fez o projeto, que não tem formação jurídica, com ajuda da IA; não substitui a revisão de um jurista. A taxa de acerto da revisão está na secção 3.
 - **"Mesma solução" por transitividade:** a viragem assume que acórdãos ligados em cadeia por "mesma solução" têm a mesma orientação; é uma aproximação.
 
 **4.5 Melhorias futuras**
