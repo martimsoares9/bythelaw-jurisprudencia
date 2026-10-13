@@ -15,7 +15,7 @@ caso,a_doc,b_doc,veredicto_ia,resposta_revisor,nota
 14,27b3381360ac41e680257757003c21d3,96ab5b0f4b9350ea802577bc0056a228,nao_comparavel,C,
 15,1d156dfa0250ae08802579340047c92a,af986fa7d99615db8025798800575971,mesma_solucao,?,
 16,761799a01749858e80257c14004ed7b4,3b80a8b506c16e0780257c3600347a89,nao_comparavel,C,
-17,1a4e740b01bb61b38025773b004fe0b9,1d2b4cf9d209bd30802576ea003e2a39,nao_comparavel,C,revisor: a solução é diferente embora seja o mesmo caso (razão a confirmar)
-18,18d0238d2eedd64980258dff003679e8,912c7ab022d3f44180258e0a0049b080,nao_comparavel,C,revisor: a solução é diferente e o caso é o mesmo (razão a confirmar)
+17,1a4e740b01bb61b38025773b004fe0b9,1d2b4cf9d209bd30802576ea003e2a39,nao_comparavel,D,revisor: são comparáveis; o veredicto 'não comparável' da IA está errado (confirmado)
+18,18d0238d2eedd64980258dff003679e8,912c7ab022d3f44180258e0a0049b080,nao_comparavel,D,revisor: são comparáveis; o veredicto 'não comparável' da IA está errado (confirmado)
 19,ced3515228871b228025772700331757,27b3381360ac41e680257757003c21d3,nao_comparavel,C,
 20,df5c1fda34277038802579f00051c52b,5b7692ff3d9e33e3802579fb002df373,nao_comparavel,D,revisor: ambos dizem o mesmo
