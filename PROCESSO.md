@@ -33,7 +33,7 @@ dgsi.pt ──scraper.py──▶ base SQLite (data/acordaos.db)
 | 6 | Ficha por acórdão | `python pipeline/extrair.py correr` | sumário → tabela `extracoes` (**370** fichas, 100% com citação válida) | **sim** |
 | 7 | Agrupar por tema | `python pipeline/agrupar.py` | questões → tabela `temas` (**30** temas) | não |
 | 8 | Fichas novas → temas | `python pipeline/atribuir_temas.py` | `extracoes` sem tema → `temas` (limiar 0,40) | não |
-| 9 | Comparar pares | `python pipeline/comparar.py correr --temas 1,2,4` | pares consecutivos → tabela `comparacoes` | **sim** |
+| 9 | Comparar pares | `python pipeline/comparar.py correr --temas 100,1,2,4` | pares mais parecidos do mesmo tema (modo `vizinhos`; `consecutivos` foi o dos primeiros 69) → tabela `comparacoes` | **sim** |
 | 10 | Validar com um AUJ | `python pipeline/validar_auj.py selecionar/extrair/comparar` | 47 acórdãos do tema do AUJ n.º 6/2024 → comparações | **sim** |
 | 11 | Viragem | `python pipeline/viragens.py` | `comparacoes` → tabela `viragens` | não |
 | 12 | Revisão manual | `revisao/CASOS.md`, `revisao/respostas.csv` | 25 veredictos revistos: **18 certos em 23** (78%) | revisor humano |

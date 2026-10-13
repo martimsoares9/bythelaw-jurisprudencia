@@ -14,7 +14,7 @@ Modelo: LLM_MODEL_JUIZ (omissão: o modelo gratuito nvidia/nemotron-3-super-120b
 com crédito, usar um modelo mais forte). Reutiliza `chamar` (cache + limites) de extrair.py.
 
 Comandos:
-  python pipeline/comparar.py correr --temas 1,2,4 [--max 45]
+  python pipeline/comparar.py correr --temas 100,1,2,4 [--max 45] [--modo vizinhos|consecutivos]
   python pipeline/comparar.py resumo
 """
 import argparse
@@ -99,11 +99,55 @@ def pares(con, temas):
             yield x, y
 
 
+def pares_vizinhos(con, temas, k=2, min_sim=0.30):
+    """Para cada acórdão do tema, os k vizinhos mais parecidos (TF-IDF da questão + normas, só no mesmo tema).
+
+    Medimos que a semelhança prevê se dois acórdãos são comparáveis (AUC 0,75 nos 55 pares já julgados): com
+    semelhança >= 0,30 passam 8 de 11 pares comparáveis e 10 de 44 não comparáveis. O par fica ordenado por data
+    (A mais antigo). Pares já julgados (em qualquer ordem) saem em `cmd_correr`.
+    """
+    import numpy as np
+    from agrupar import STOP, sem_acentos, texto_tema
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    con.row_factory = sqlite3.Row
+    base = """SELECT a.doc_id, a.data_acordao, a.processo, a.sumario, e.questao_juridica, e.solucao, e.normas, ? AS tema_id
+              FROM extracoes e JOIN acordaos a USING(doc_id) WHERE e.valido=1 AND e.tipo='merito' AND a.doc_id IN ({})"""
+    glob = con.execute("SELECT e.questao_juridica q, e.normas n FROM extracoes e WHERE e.valido=1 AND e.tipo='merito'").fetchall()
+    vec = TfidfVectorizer(stop_words=[sem_acentos(w) for w in STOP], ngram_range=(1, 2), min_df=2, sublinear_tf=True)
+    vec.fit([texto_tema(r["q"], r["n"]) for r in glob])
+    out, vistos = [], set()
+    for t in temas:
+        fonte = "SELECT doc_id FROM tema_auj" if t == 100 else f"SELECT doc_id FROM temas WHERE tema_id={int(t)}"
+        rows = con.execute(base.format(fonte), (t,)).fetchall()
+        if len(rows) < 2:
+            continue
+        X = vec.transform([texto_tema(r["questao_juridica"], r["normas"]) for r in rows]).toarray()
+        n = np.linalg.norm(X, axis=1, keepdims=True); n[n == 0] = 1
+        S = (X / n) @ (X / n).T
+        np.fill_diagonal(S, -1)
+        for i, r in enumerate(rows):
+            for j in np.argsort(-S[i])[:k]:
+                if S[i, j] < min_sim:
+                    continue
+                x, y = sorted((rows[i], rows[j]), key=lambda z: (z["data_acordao"], z["doc_id"]))
+                chave = (x["doc_id"], y["doc_id"])
+                if chave not in vistos:
+                    vistos.add(chave); out.append((float(S[i, j]), x, y))
+    out.sort(key=lambda z: -z[0])  # primeiro os mais parecidos: é onde há mais probabilidade de comparabilidade
+    return [(x, y) for _, x, y in out]
+
+
 def cmd_correr(a):
     con = sqlite3.connect(DB)
     con.execute(SCHEMA)
     feitos = {(x[0], x[1]) for x in con.execute("SELECT a_doc,b_doc FROM comparacoes")}
-    todos = [(x, y) for x, y in pares(con, [int(t) for t in a.temas.split(",")]) if (x["doc_id"], y["doc_id"]) not in feitos]
+    lista = [int(t) for t in a.temas.split(",")]
+    if a.modo == "vizinhos":
+        candidatos = pares_vizinhos(con, lista, a.k, a.min_sim)
+    else:
+        candidatos = list(pares(con, lista))
+    feitos |= {(b, a_) for a_, b in feitos}  # um par já julgado conta nas duas ordens
+    todos = [(x, y) for x, y in candidatos if (x["doc_id"], y["doc_id"]) not in feitos]
     todos = todos[:a.max]
     print(f"{len(todos)} pares por comparar com {MODELO_JUIZ}")
     for i, (x, y) in enumerate(todos, 1):
@@ -129,6 +173,10 @@ if __name__ == "__main__":
     sub = p.add_subparsers(dest="cmd", required=True)
     c = sub.add_parser("correr"); c.set_defaults(f=cmd_correr)
     c.add_argument("--temas", required=True); c.add_argument("--max", type=int, default=45)
+    c.add_argument("--modo", choices=["vizinhos", "consecutivos"], default="vizinhos",
+                   help="vizinhos: pares mais parecidos (omissão); consecutivos: cada acórdão com o seguinte por data")
+    c.add_argument("--k", type=int, default=2, help="vizinhos por acórdão (modo vizinhos)")
+    c.add_argument("--min-sim", type=float, default=0.30, help="semelhança mínima (modo vizinhos)")
     sub.add_parser("resumo").set_defaults(f=cmd_resumo)
     a = p.parse_args()
     a.f(a)

@@ -168,6 +168,9 @@ def mostrar_divergencia(c, a, b, vir=None, tema=None):
     if v:
         if v["estado"] == "viragem":
             st.success(f'**Viragem de entendimento em {v["data"]}:** {v["antes"]} acórdãos ligados antes e {v["depois"]} depois (mínimo {v["min_lado"]}).')
+        elif v["estado"] == "divergencia_coexistente":
+            st.info(f'**Divergência que coexiste:** há {v["antes"]} acórdãos de uma orientação e {v["depois"]} da outra, em épocas que se sobrepõem. '
+                    'As duas orientações existiram ao mesmo tempo; não é uma viragem.')
         else:
             st.info(f'**Divergência isolada, ainda não é viragem:** {v["antes"]} acórdão(s) ligado(s) do lado antigo e {v["depois"]} do lado recente; '
                     f'são precisos pelo menos {v["min_lado"]} de cada lado para falarmos de viragem. Com mais acórdãos na amostra poderia confirmar-se.')
