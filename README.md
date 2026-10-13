@@ -78,6 +78,8 @@ streamlit run app/app.py
 
 A app só lê `app/dados.json`. Para a publicar: Streamlit Community Cloud, ficheiro principal `app/app.py`.
 
+**O que tem a app** (4 páginas, menu à esquerda): **Início** (como usar em 3 passos, números, caso em destaque, glossário), **Explorar assuntos** (31 assuntos, pesquisa por palavras com sinónimos, linha do tempo com arcos, divergências lado a lado com as citações e o link para o DGSI, fichas de cada acórdão), **Divergência encontrada** e **Sobre o projeto** (método, resultados e limites). Não usa IA nem o DGSI em tempo real.
+
 ## Repetir o pipeline com IA (opcional)
 
 Precisa de uma chave de um fornecedor de LLM no ficheiro `.env` (nunca vai para o git): `OPENROUTER_API_KEY=...`. Modelo e fornecedor leem-se do ambiente (`LLM_MODEL_EXTRACAO`, `LLM_MODEL_JUIZ`, `LLM_BASE_URL`). As respostas ficam em cache (`cache/llm/`), por isso repetir não gasta de novo.
