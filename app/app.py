@@ -72,62 +72,75 @@ try:
 except Exception:  # versão do Streamlit sem este método: a app funciona na mesma
     pass
 
-st.title("⚖️ Onde e quando o tribunal mudou de opinião")
-st.caption("Supremo Tribunal de Justiça · 4.ª Secção (direito do trabalho) · 2010–2026 · fonte: dgsi.pt")
-st.warning("**Classificação automática por IA, pode conter erros.** As citações são verificadas por programa (têm de existir "
-           "no sumário do acórdão), mas a interpretação não foi validada por um jurista. "
-           f"Amostra de {dados['fichas']} acórdãos ({dados['fichas_merito']} de mérito) de um conjunto de {dados['total_trabalho']}; "
-           "ver as limitações na nota de decisões.", icon="⚠️")
+REPO = "https://github.com/martimsoares9/bythelaw-jurisprudencia"
+REVISAO = {"certos": 18, "com_opiniao": 23, "total": 25}  # revisão manual de 25 veredictos (revisao/respostas.csv)
+INICIO, EXPLORAR, DIVERGENCIA, SOBRE = "🏠 Início", "🔎 Explorar assuntos", "⚖️ Divergência encontrada", "ℹ️ Sobre o projeto"
+PAGINAS = [INICIO, EXPLORAR, DIVERGENCIA, SOBRE]
 
-pesquisa = st.sidebar.text_input("🔎 Pesquisar por palavra", placeholder="ex.: férias, justa causa, art. 18.º")
-termos = [norm(t) for t in pesquisa.split() if t.strip()]
-acertos = {i: [a for a in t["acordaos"] if corresponde(a, termos)] for i, t in temas.items()} if termos else {i: t["acordaos"] for i, t in temas.items()}
-ordem = sorted((i for i in temas if acertos[i]), key=lambda i: (i != 100, -len(temas[i]["comparacoes"]), -len(temas[i]["acordaos"])))
-if not ordem:
-    st.sidebar.error("Nenhum acórdão com essas palavras.")
-    st.stop()
-if termos:
-    ext = sorted({a for t in termos for a in expandir(t)} - set(termos))
-    if ext:
-        st.sidebar.caption("Também procurei: " + ", ".join(ext[:12]) + ("…" if len(ext) > 12 else ""))
-    st.sidebar.success(f"{sum(len(acertos[i]) for i in ordem)} acórdãos em {len(ordem)} assuntos")
-tid = st.sidebar.selectbox("Escolhe um assunto", ordem, format_func=lambda i: f'{temas[i]["nome"]} ({len(acertos[i])} acórdãos)')
-tema = temas[tid]
-ac = {a["doc_id"]: a for a in tema["acordaos"]}
-comps = sorted(tema["comparacoes"], key=lambda c: ac[c["a_doc"]]["data"])
-contagem = {k: sum(c["resultado"] == k for c in comps) for k in NOME}
+# ---------- números globais (calculados dos dados, sem escrever à mão) ----------
+pares = {}
+for t in dados["temas"]:
+    for c in t["comparacoes"]:
+        pares[(c["a_doc"], c["b_doc"])] = c
+n_pares = len(pares)
+n_opostas = sum(c["resultado"] == "solucao_oposta" for c in pares.values())
+acordao_por_id = {a["doc_id"]: a for t in dados["temas"] for a in t["acordaos"]}
 
-st.sidebar.markdown("**Como ler**")
-for k in NOME:
-    st.sidebar.markdown(f'<span style="color:{COR[k]}">●</span> **{NOME[k]}**: {EXPLICA[k]}', unsafe_allow_html=True)
-st.sidebar.caption("Um **acórdão** é a decisão de vários juízes; o **sumário** é o seu resumo oficial.")
 
-st.subheader(tema["nome"])
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("Acórdãos", len(ac))
-c2.metric("Soluções opostas", contagem["solucao_oposta"])
-c3.metric("Mesma solução", contagem["mesma_solucao"])
-c4.metric("Não comparáveis", contagem["nao_comparavel"])
-if tema.get("data_auj"):
-    st.info("Neste assunto o STJ fixou depois uma orientação única no **Acórdão de Uniformização de Jurisprudência n.º 6/2024** "
-            f"(primeira citação nos nossos dados: {tema['data_auj']}). É a nossa referência para validar.", icon="📌")
+def ir(pagina, assunto=None, pesquisa=None):
+    """Callback de botões: muda de página (e, se for caso disso, de assunto ou pesquisa)."""
+    st.session_state["pagina"] = pagina
+    if assunto is not None:
+        st.session_state["assunto_pedido"] = assunto
+    if pesquisa is not None:
+        st.session_state["pesquisa"] = pesquisa
 
-aba1, aba2, aba3 = st.tabs(["Linha do tempo", "Divergências (lado a lado)", "Todos os acórdãos"])
 
-with aba1:
+def busca_inicio():
+    ir(EXPLORAR, pesquisa=st.session_state.get("busca_inicio", ""))
+
+
+if "pagina" not in st.session_state:
+    st.session_state["pagina"] = INICIO
+st.sidebar.title("⚖️ Divergências STJ")
+st.sidebar.radio("Navegar", PAGINAS, key="pagina")
+st.sidebar.caption("Supremo Tribunal de Justiça · 4.ª Secção (trabalho) · 2010–2026 · fonte: dgsi.pt")
+pagina = st.session_state["pagina"]
+
+AVISO = ("**Classificação automática por IA, pode conter erros.** As citações são verificadas por programa (têm de existir "
+         "no sumário do acórdão), mas a interpretação não foi validada por um jurista. "
+         f"Amostra de {dados['fichas']} acórdãos ({dados['fichas_merito']} de mérito) de um conjunto de {dados['total_trabalho']}.")
+
+
+def glossario():
+    with st.expander("📖 Glossário: o que quer dizer cada palavra"):
+        st.markdown(
+            "- **Acórdão:** decisão tomada por vários juízes.\n"
+            "- **Sumário:** o resumo oficial que o próprio tribunal escreve de cada acórdão.\n"
+            "- **Ficha:** o resumo que a IA faz do sumário (questão, solução e uma citação literal).\n"
+            "- **Mérito:** o acórdão resolve a questão de fundo (quem tem razão), e não só se o recurso pode ser aceite.\n"
+            "- **Divergência:** dois acórdãos respondem à mesma questão de formas opostas.\n"
+            "- **Viragem:** o tribunal muda de opinião de forma duradoura (vários acórdãos de cada lado).\n"
+            "- **AUJ:** acórdão de uniformização de jurisprudência; o STJ fixa uma orientação única para acabar com uma divergência.\n"
+            "- **LAT:** Lei dos Acidentes de Trabalho. **CT:** Código do Trabalho.\n"
+            "- **Responsabilidade agravada:** quando o empregador teve culpa ou não cumpriu regras de segurança, paga mais.")
+
+
+def legenda():
+    for k in NOME:
+        st.markdown(f'<span style="color:{COR[k]}">●</span> **{NOME[k]}**: {EXPLICA[k]}', unsafe_allow_html=True)
+
+
+def linha_do_tempo(tema, ac, comps):
     import math
     from datetime import date, timedelta
-
-    def dia(x):
-        return date.fromisoformat(x)
-
     xs = [a["data"] for a in tema["acordaos"]]
     fig = go.Figure()
     for k in NOME:  # primeiro os cinzentos, por baixo; os laranjas ficam por cima
         for c in comps:
             if c["resultado"] != k:
                 continue
-            d0, d1 = dia(ac[c["a_doc"]]["data"]), dia(ac[c["b_doc"]]["data"])
+            d0, d1 = date.fromisoformat(ac[c["a_doc"]]["data"]), date.fromisoformat(ac[c["b_doc"]]["data"])
             n = max((d1 - d0).days, 1)
             h = 0.15 + min(n / 3650, 1) * 0.8  # arcos mais altos para pares mais afastados no tempo
             ts = [i / 20 for i in range(21)]
@@ -146,52 +159,215 @@ with aba1:
                       annotation_text="AUJ n.º 6/2024", annotation_position="top")
     fig.update_layout(height=380, margin=dict(l=10, r=10, t=30, b=10), yaxis=dict(visible=False, range=[-0.15, 1.1]),
                       xaxis_title="Data do acórdão", legend=dict(orientation="h", y=-0.2))
-    st.plotly_chart(fig, width='stretch')
-    st.caption("Cada ponto é um acórdão. Os arcos ligam acórdãos consecutivos que a IA comparou; "
-               "o arco laranja grosso é uma divergência.")
+    st.plotly_chart(fig, width="stretch")
 
-with aba2:
-    div = [c for c in comps if c["resultado"] == "solucao_oposta"]
-    if not div:
-        st.info("A IA não encontrou soluções opostas neste assunto com os pares comparados. "
-                "Isso não prova que não existam: só se compararam acórdãos consecutivos e só uma parte da amostra.")
-    vir = {v["a_doc"]: v for v in tema.get("viragens", [])}
-    for c in div:
-        a, b = ac[c["a_doc"]], ac[c["b_doc"]]
-        st.markdown(f'### 🟠 {a["data"]}  ↔  {b["data"]}')
-        v = vir.get(c["a_doc"])
-        if v:
-            if v["estado"] == "viragem":
-                st.success(f'**Viragem de entendimento em {v["data"]}:** {v["antes"]} acórdãos ligados antes e {v["depois"]} depois (mínimo {v["min_lado"]}).')
-            else:
-                st.info(f'**Divergência isolada, ainda não é viragem:** {v["antes"]} acórdão(s) ligado(s) do lado antigo e {v["depois"]} do lado recente; '
-                        f'são precisos pelo menos {v["min_lado"]} de cada lado para falarmos de viragem. Com mais acórdãos na amostra poderia confirmar-se.')
-        st.markdown(f'**Porquê a IA diz que são opostos:** {c["justificacao"]}')
-        ca, cb = st.columns(2)
-        for col, x, cit, lado in ((ca, a, c["citacao_a"], "Mais antigo"), (cb, b, c["citacao_b"], "Mais recente")):
-            with col:
+
+def mostrar_divergencia(c, a, b, vir=None, tema=None):
+    st.markdown(f'### 🟠 {a["data"]}  ↔  {b["data"]}')
+    v = (vir or {}).get(c["a_doc"])
+    if v:
+        if v["estado"] == "viragem":
+            st.success(f'**Viragem de entendimento em {v["data"]}:** {v["antes"]} acórdãos ligados antes e {v["depois"]} depois (mínimo {v["min_lado"]}).')
+        else:
+            st.info(f'**Divergência isolada, ainda não é viragem:** {v["antes"]} acórdão(s) ligado(s) do lado antigo e {v["depois"]} do lado recente; '
+                    f'são precisos pelo menos {v["min_lado"]} de cada lado para falarmos de viragem. Com mais acórdãos na amostra poderia confirmar-se.')
+    st.markdown(f'**Porquê a IA diz que são opostos:** {c["justificacao"]}')
+    ca, cb = st.columns(2)
+    for col, x, cit, lado in ((ca, a, c["citacao_a"], "Mais antigo"), (cb, b, c["citacao_b"], "Mais recente")):
+        with col:
+            with st.container(border=True):
                 st.markdown(f'**{lado}** · {x["data"]} · proc. {x["processo"]}')
                 st.markdown(f'*Questão:* {x["questao"]}')
                 st.markdown(f'*Solução:* {x["solucao"]}')
                 st.markdown(f'> {cit}')
                 st.markdown(f'[Ver o acórdão original no DGSI]({x["url"]})')
-        st.divider()
-    st.markdown("#### Outros pares comparados")
-    for c in comps:
-        if c["resultado"] == "solucao_oposta":
-            continue
-        a, b = ac[c["a_doc"]], ac[c["b_doc"]]
-        with st.expander(f'{NOME[c["resultado"]]} · {a["data"]} → {b["data"]}'):
-            st.write(c["justificacao"])
 
-with aba3:
+
+# ====================================================================== INÍCIO
+if pagina == INICIO:
+    st.title("⚖️ Onde e quando o tribunal mudou de opinião")
+    st.markdown("Os tribunais publicam milhares de decisões. Esta ferramenta **junta as que tratam do mesmo problema** e "
+                "mostra, ao longo dos anos, **se o tribunal respondeu sempre da mesma forma ou se mudou de opinião**. "
+                "Usa acórdãos do Supremo Tribunal de Justiça sobre direito do trabalho (2010–2026).")
+    st.warning(AVISO, icon="⚠️")
+
+    st.subheader("Como usar, em 3 passos")
+    p1, p2, p3 = st.columns(3)
+    for col, n, tit, txt in ((p1, "1", "Escolhe um assunto", "Por exemplo, despedimento por justa causa, férias ou acidentes de trabalho. Podes também pesquisar por palavras."),
+                             (p2, "2", "Vê a linha do tempo", "Cada ponto é um acórdão. Os arcos ligam acórdãos comparados: laranja é divergência, azul é a mesma solução, cinzento é não comparável."),
+                             (p3, "3", "Abre a divergência", "Lê os dois acórdãos lado a lado, com a citação que justifica e o link para o original no DGSI.")):
+        with col:
+            with st.container(border=True):
+                st.markdown(f"**{n}. {tit}**")
+                st.write(txt)
+
+    st.subheader("Em números")
+    m = st.columns(5)
+    m[0].metric("Acórdãos analisados", dados["fichas"])
+    m[1].metric("Assuntos", len(temas))
+    m[2].metric("Pares comparados", n_pares)
+    m[3].metric("Divergências", n_opostas)
+    m[4].metric("Acerto na revisão", f'{round(100 * REVISAO["certos"] / REVISAO["com_opiniao"])}%',
+                help=f'{REVISAO["certos"]} certos em {REVISAO["com_opiniao"]} veredictos com opinião, de {REVISAO["total"]} revistos à mão.')
+
+    st.subheader("Caso em destaque")
+    opostas = [c for c in pares.values() if c["resultado"] == "solucao_oposta"]
+    if opostas:
+        c = opostas[0]
+        a, b = acordao_por_id[c["a_doc"]], acordao_por_id[c["b_doc"]]
+        with st.container(border=True):
+            st.markdown(f'**Duas decisões do mesmo tribunal, em {a["data"][:4]}, sobre a mesma pergunta:** '
+                        f'*{a["questao"]}*')
+            st.markdown(f'- **{a["data"]}:** {a["solucao"]}\n- **{b["data"]}:** {b["solucao"]}')
+            st.caption("Anos depois, o STJ fixou uma orientação única sobre esta matéria (Acórdão de Uniformização n.º 6/2024). "
+                       "É uma questão muito próxima da que o sistema encontrou em aberto em 2011 (a relação exata deve ser confirmada por um jurista).")
+            st.button("Ver o caso completo →", on_click=ir, args=(DIVERGENCIA,), key="b_caso")
+
+    st.subheader("Começa por aqui")
+    b1, b2 = st.columns([2, 3])
+    with b1:
+        st.text_input("🔎 Pesquisar um tema por palavras", key="busca_inicio", on_change=busca_inicio,
+                      placeholder="ex.: despedir, férias, assédio (Enter)")
+    with b2:
+        st.markdown("**Assuntos já comparados:**")
+        com_comp = sorted((t for t in temas.values() if t["comparacoes"]), key=lambda t: (t["id"] != 100, -len(t["comparacoes"])))
+        cols = st.columns(2)
+        for i, t in enumerate(com_comp[:4]):
+            cols[i % 2].button(f'{t["nome"][:42]}…' if len(t["nome"]) > 42 else t["nome"], key=f'at{t["id"]}',
+                               on_click=ir, args=(EXPLORAR, t["id"]))
+    st.button("Explorar todos os assuntos →", on_click=ir, args=(EXPLORAR,), key="b_expl")
+    glossario()
+
+# ====================================================================== EXPLORAR
+elif pagina == EXPLORAR:
+    st.title("🔎 Explorar assuntos")
+    pesquisa = st.sidebar.text_input("🔎 Pesquisar por palavra", key="pesquisa", placeholder="ex.: férias, justa causa, art. 18.º")
+    termos = [norm(t) for t in pesquisa.split() if t.strip()]
+    acertos = {i: [a for a in t["acordaos"] if corresponde(a, termos)] for i, t in temas.items()} if termos else {i: t["acordaos"] for i, t in temas.items()}
+    ordem = sorted((i for i in temas if acertos[i]), key=lambda i: (i != 100, not temas[i]["comparacoes"], -len(temas[i]["comparacoes"]), -len(temas[i]["acordaos"])))
+    if not ordem:
+        st.error("Nenhum acórdão com essas palavras. Tenta outra palavra ou apaga a pesquisa.")
+        st.stop()
     if termos:
-        st.caption(f'A mostrar só os acórdãos que contêm "{pesquisa}" ({len(acertos[tid])} de {len(tema["acordaos"])}).')
-    for a in acertos[tid]:
-        with st.expander(f'{a["data"]} · proc. {a["processo"]} · {a["questao"][:110]}'):
-            st.markdown(f'**Questão:** {a["questao"]}')
-            st.markdown(f'**Solução:** {a["solucao"]}')
-            if a.get("trecho"):
-                st.markdown(f'> {a["trecho"]}')
-            st.caption(f'Relator: {a["relator"]} · ficha feita por {a["modelo"]} (confiança {a["confianca"]})')
-            st.markdown(f'[Ver o acórdão original no DGSI]({a["url"]})')
+        ext = sorted({a for t in termos for a in expandir(t)} - set(termos))
+        if ext:
+            st.sidebar.caption("Também procurei: " + ", ".join(ext[:12]) + ("…" if len(ext) > 12 else ""))
+        st.sidebar.success(f"{sum(len(acertos[i]) for i in ordem)} acórdãos em {len(ordem)} assuntos")
+
+    def rotulo(i):
+        t = temas[i]
+        marca = "✔ comparado" if t["comparacoes"] else "sem comparações ainda"
+        return f'{t["nome"]} · {len(acertos[i])} acórdãos · {marca}'
+
+    pedido = st.session_state.get("assunto_pedido")
+    idx = ordem.index(pedido) if pedido in ordem else 0
+    tid = st.sidebar.selectbox("Escolhe um assunto", ordem, index=idx, format_func=rotulo)
+    st.session_state["assunto_pedido"] = tid
+    st.sidebar.markdown("**Como ler as cores**")
+    with st.sidebar:
+        legenda()
+
+    tema = temas[tid]
+    ac = {a["doc_id"]: a for a in tema["acordaos"]}
+    comps = sorted(tema["comparacoes"], key=lambda c: ac[c["a_doc"]]["data"])
+    contagem = {k: sum(c["resultado"] == k for c in comps) for k in NOME}
+
+    st.subheader(tema["nome"])
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Acórdãos", len(ac))
+    c2.metric("Soluções opostas", contagem["solucao_oposta"], help="Mesma pergunta, respostas contrárias.")
+    c3.metric("Mesma solução", contagem["mesma_solucao"], help="Mesma pergunta, mesma resposta.")
+    c4.metric("Não comparáveis", contagem["nao_comparavel"], help="Casos ou perguntas diferentes: é um resultado normal, e não um erro.")
+    if comps:
+        st.caption("«Não comparável» é uma resposta normal: acontece quando os dois acórdãos decidem casos ou perguntas diferentes. "
+                   "O sistema prefere dizê-lo a forçar uma divergência que não existe.")
+    else:
+        st.info("**Este assunto ainda não tem pares comparados.** A IA só pôde comparar os assuntos maiores (há um limite diário de pedidos). "
+                "Podes ler a ficha de cada acórdão no separador «Todos os acórdãos».", icon="ℹ️")
+    if tema.get("data_auj"):
+        st.info("Neste assunto o STJ fixou depois uma orientação única no **Acórdão de Uniformização de Jurisprudência n.º 6/2024** "
+                f"(primeira citação nos nossos dados: {tema['data_auj']}). É a nossa referência para validar.", icon="📌")
+
+    aba1, aba2, aba3 = st.tabs(["Linha do tempo", "Divergências (lado a lado)", "Todos os acórdãos"])
+    with aba1:
+        if comps:
+            linha_do_tempo(tema, ac, comps)
+            st.caption("Cada ponto é um acórdão (passa o rato por cima para ver a pergunta). Os arcos ligam acórdãos consecutivos que a IA comparou; "
+                       "o arco laranja grosso é uma divergência.")
+        else:
+            xs = [a["data"] for a in tema["acordaos"]]
+            st.write(f'{len(xs)} acórdãos entre {min(xs)[:4]} e {max(xs)[:4]}, ainda sem comparações para desenhar arcos.')
+    with aba2:
+        div = [c for c in comps if c["resultado"] == "solucao_oposta"]
+        if not div:
+            st.info("A IA não encontrou soluções opostas neste assunto com os pares comparados. "
+                    "Isso não prova que não existam: só se compararam acórdãos consecutivos e só uma parte da amostra.")
+        vir = {v["a_doc"]: v for v in tema.get("viragens", [])}
+        for c in div:
+            mostrar_divergencia(c, ac[c["a_doc"]], ac[c["b_doc"]], vir, tema)
+            st.divider()
+        outros = [c for c in comps if c["resultado"] != "solucao_oposta"]
+        if outros:
+            st.markdown("#### Outros pares comparados")
+        for c in outros:
+            a, b = ac[c["a_doc"]], ac[c["b_doc"]]
+            with st.expander(f'{NOME[c["resultado"]]} · {a["data"]} → {b["data"]}'):
+                st.write(c["justificacao"])
+    with aba3:
+        if termos:
+            st.caption(f'A mostrar só os acórdãos que contêm "{pesquisa}" ({len(acertos[tid])} de {len(tema["acordaos"])}).')
+        for a in acertos[tid]:
+            with st.expander(f'{a["data"]} · proc. {a["processo"]} · {a["questao"][:110]}'):
+                st.markdown(f'**Questão:** {a["questao"]}')
+                st.markdown(f'**Solução:** {a["solucao"]}')
+                if a.get("trecho"):
+                    st.markdown(f'> {a["trecho"]}')
+                st.caption(f'Relator: {a["relator"]} · ficha feita por {a["modelo"]} (confiança {a["confianca"]})')
+                st.markdown(f'[Ver o acórdão original no DGSI]({a["url"]})')
+    glossario()
+
+# ====================================================================== DIVERGÊNCIA
+elif pagina == DIVERGENCIA:
+    st.title("⚖️ A divergência que o sistema encontrou")
+    st.warning(AVISO, icon="⚠️")
+    st.markdown("Em 55 pares de acórdãos comparados pela IA, **encontrou-se uma divergência**: duas decisões do mesmo tribunal e da mesma secção, "
+                "com meses de intervalo, que respondem de forma oposta à mesma pergunta. É o tipo de caso que, mais tarde, o STJ resolve com um "
+                "Acórdão de Uniformização de Jurisprudência (AUJ).")
+    ja = set()
+    for t in dados["temas"]:
+        ac_t = {a["doc_id"]: a for a in t["acordaos"]}
+        vir_t = {v["a_doc"]: v for v in t.get("viragens", [])}
+        for c in t["comparacoes"]:
+            if c["resultado"] == "solucao_oposta" and (c["a_doc"], c["b_doc"]) not in ja:
+                ja.add((c["a_doc"], c["b_doc"]))
+                mostrar_divergencia(c, ac_t[c["a_doc"]], ac_t[c["b_doc"]], vir_t, t)
+                st.markdown("**Em simples:** num acórdão, o empregador só responde mais se se provar que teve **culpa**; no outro, "
+                            "quando não cumpriu regras de segurança, **a culpa não é necessária**. O AUJ n.º 6/2024 veio fixar o que se exige "
+                            "para esta responsabilidade (interpretação a confirmar por um jurista).")
+    st.markdown("#### Porque é só uma?")
+    st.markdown("- A IA é **cautelosa**: na revisão manual, errou sempre por dizer «não comparável» a mais, e nunca inventou divergências.\n"
+                f"- Só {dados['fichas']} de {dados['total_trabalho']} acórdãos têm ficha, e só se compararam acórdãos consecutivos.\n"
+                "- Com mais fichas e mais pares é provável que apareçam mais casos.")
+    st.button("Explorar o assunto desta divergência →", on_click=ir, args=(EXPLORAR, 100), key="b_ex100")
+    glossario()
+
+# ====================================================================== SOBRE
+else:
+    st.title("ℹ️ Sobre o projeto")
+    st.markdown("Protótipo feito para o desafio da ByTheLaw: agregar acórdãos **por tema** e identificar **decisões divergentes ao longo do tempo**. "
+                f"Todo o código, a nota de decisões e a descrição do uso de IA estão no [repositório]({REPO}).")
+    st.subheader("Como foi feito")
+    st.markdown(
+        "1. **Recolha responsável do DGSI** (pausas, cache, identificação): 21 681 acórdãos indexados, 1820 de mérito da 4.ª Secção.\n"
+        "2. **Ficha por acórdão (IA):** lê o sumário e escreve a questão, as normas, a solução e uma citação literal, que um programa verifica.\n"
+        "3. **Temas:** as fichas agrupam-se por semelhança de palavras (30 temas).\n"
+        "4. **Comparação de pares (IA):** «mesma solução», «solução oposta» ou «não comparável», com citações de cada lado.\n"
+        "5. **Viragem:** distingue divergência isolada de mudança duradoura de entendimento.\n"
+        "6. **Validação:** com o AUJ n.º 6/2024 e com 25 veredictos revistos à mão.")
+    st.subheader("Resultados e limites")
+    st.markdown(f"- **{dados['fichas']}** fichas ({dados['fichas_merito']} de mérito) de {dados['total_trabalho']} acórdãos; **{n_pares}** pares comparados; **{n_opostas}** divergência.\n"
+                f"- Revisão manual: **{REVISAO['certos']} certos em {REVISAO['com_opiniao']}** ({round(100 * REVISAO['certos'] / REVISAO['com_opiniao'])}%); os erros foram todos «não comparável» a mais.\n"
+                "- Um só tribunal e uma só área; dois modelos de IA (um gratuito, mais fraco); revisão por uma só pessoa sem formação jurídica.\n"
+                "- A pesquisa é por palavras com sinónimos, e não por sentido; a app não usa IA em tempo real.")
+    st.info("Esta ferramenta ajuda a **encontrar** possíveis divergências. Não substitui a leitura nem a opinião de um jurista.", icon="⚠️")
+    glossario()
