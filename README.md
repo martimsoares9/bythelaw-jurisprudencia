@@ -35,7 +35,7 @@ Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões diver
 | `pipeline/viragens.py` | Etapa 5b: distingue divergência isolada de viragem (mínimo de acórdãos ligados de cada lado) |
 | `pipeline/exportar.py`, `pipeline/nomes_temas.json` | Etapa 6: gera `app/dados.json` com nomes legíveis dos temas |
 | `pipeline/guardar_ia.py` | Guarda/restaura as tabelas da IA em `dados/ia_tabelas.json.gz` |
-| `app/app.py`, `app/dados.json` | A aplicação Streamlit e os dados só-leitura que ela lê |
+| `app/app.py`, `app/dados.json`, `app/sinonimos.json` | A aplicação Streamlit, os dados só-leitura que ela lê e a lista de sinónimos da pesquisa |
 | `requirements.txt`, `app/requirements.txt` | Dependências do pipeline e da app |
 | `testsexemplos/` | HTML de exemplo (um acórdão e uma lista) para testar o parser sem rede |
 | `dados/acordaos.db.gz` | Cópia comprimida da base de dados recolhida (antes das fichas da IA) |

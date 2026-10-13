@@ -27,9 +27,27 @@ def norm(x):
     return unicodedata.normalize("NFKD", (x or "").lower()).encode("ascii", "ignore").decode()
 
 
+# Pesquisa por palavras com sinónimos jurídicos (app/sinonimos.json). Não usa IA: é uma lista escrita à mão.
+GRUPOS = [[norm(m) for m in g] for g in json.loads((Path(__file__).parent / "sinonimos.json").read_text())]
+GENERICAS = {"contrato", "trabalho", "trabalhador", "tribunal", "acordao", "recurso", "acao", "direito"}  # não ativam sinónimos
+
+
+def expandir(termo):
+    """Devolve o termo mais os sinónimos dos grupos em que ele aparece (por palavra inteira ou início de palavra)."""
+    alts = {termo}
+    if termo in GENERICAS:
+        return alts
+    for g in GRUPOS:
+        for m in g:
+            if termo == m or any(termo == w or (len(termo) >= 5 and w.startswith(termo[:5])) for w in m.split()):
+                alts.update(g)
+                break
+    return alts
+
+
 def corresponde(a, termos):
     texto = norm(" ".join([a["questao"], a["solucao"] or "", a.get("normas") or "", a["processo"]]))
-    return all(t in texto for t in termos)
+    return all(any(alt in texto for alt in expandir(t)) for t in termos)
 
 
 @st.cache_data
@@ -55,6 +73,9 @@ if not ordem:
     st.sidebar.error("Nenhum acórdão com essas palavras.")
     st.stop()
 if termos:
+    ext = sorted({a for t in termos for a in expandir(t)} - set(termos))
+    if ext:
+        st.sidebar.caption("Também procurei: " + ", ".join(ext[:12]) + ("…" if len(ext) > 12 else ""))
     st.sidebar.success(f"{sum(len(acertos[i]) for i in ordem)} acórdãos em {len(ordem)} assuntos")
 tid = st.sidebar.selectbox("Escolhe um assunto", ordem, format_func=lambda i: f'{temas[i]["nome"]} ({len(acertos[i])} acórdãos)')
 tema = temas[tid]
