@@ -58,6 +58,20 @@ def carregar():
 dados = carregar()
 temas = {t["id"]: t for t in dados["temas"]}
 
+# Pede ao browser para não oferecer tradução: o tradutor do Chrome/Edge parte o Streamlit
+# ("NotFoundError: removeChild") e troca o texto. A página está em português europeu.
+try:
+    st.components.v1.html("""<script>
+    const d = window.parent.document;
+    d.documentElement.setAttribute("lang", "pt-PT");
+    d.documentElement.setAttribute("translate", "no");
+    if (!d.querySelector('meta[name="google"]')) {
+      const m = d.createElement("meta"); m.name = "google"; m.content = "notranslate"; d.head.appendChild(m);
+    }
+    </script>""", height=0)
+except Exception:  # versão do Streamlit sem este método: a app funciona na mesma
+    pass
+
 st.title("⚖️ Onde e quando o tribunal mudou de opinião")
 st.caption("Supremo Tribunal de Justiça · 4.ª Secção (direito do trabalho) · 2010–2026 · fonte: dgsi.pt")
 st.warning("**Classificação automática por IA, pode conter erros.** As citações são verificadas por programa (têm de existir "
