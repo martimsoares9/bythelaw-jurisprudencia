@@ -3,6 +3,14 @@
 > Entregável do enunciado: *"uma nota curta sobre as decisões tomadas: subset escolhido, abordagem para agrupar por tema e para detetar divergências, e principais limitações"*.
 > Estado a 2026-10-13: subset, temas e deteção de divergências estão feitos e medidos; a revisão manual de 25 classificações está feita (secção 3).
 
+## Resumo (leitura de 1 minuto)
+
+- **Subset:** STJ, 4.ª Secção (direito do trabalho), 2010–2026; 1820 acórdãos de mérito recolhidos do DGSI com pausas, cache e identificação.
+- **Temas:** a IA lê o sumário de cada acórdão e escreve uma ficha (questão, solução, citação verificada por programa); as fichas agrupam-se em 30 temas por TF-IDF. **Só 370 dos 1820 têm ficha** (limite de custo da IA).
+- **Divergências:** um juiz de pares (IA) compara acórdãos do mesmo tema e responde "mesma solução", "oposta" ou "não comparável". Encontrou 1 divergência (2011), a que o AUJ n.º 6/2024 veio resolver; classificada como isolada, não como viragem.
+- **Validação:** 25 veredictos revistos à mão, 18 certos em 23 (78%); a IA erra por cautela (diz "não comparável" a mais), sem inventar divergências.
+- **Limitações principais:** 20% de cobertura, um só tribunal e área, dois modelos de IA (um gratuito), um só revisor sem formação jurídica. O resto desta nota explica cada decisão.
+
 ## 1. Subset escolhido — [FEITO]
 
 **STJ, 4.ª Secção (direito do trabalho), 2010 a 2026.**

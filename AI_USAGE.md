@@ -15,7 +15,7 @@ o que tiveste de corrigir ou o que aprendeste.
 
 ## Fluxo de trabalho (resumo)
 
-Planeei o projeto com o Claude (claude.ai) e deixei tudo escrito no `CLAUDE.md`, que serve de contexto para o Claude Code, com o que está **decidido**, **proposto** e **em aberto**. Depois trabalho por fases pequenas e testáveis: o Claude Code corre o passo (recolher, contar, filtrar), mostra-me números e exemplos, e **eu decido** antes de avançar (por exemplo, aprovei eu o subset depois de ver as contagens por ano). No fim de cada fase atualiza-se o `CLAUDE.md`, faz-se commit e push. Dentro do pipeline, a API do Claude será usada para extrair a questão jurídica e classificar divergências, sempre com citações verificadas por automático. **[completar no fim com o fluxo da extração e do juiz]**
+Planeei o projeto com o Claude (claude.ai) e deixei tudo escrito num ficheiro de contexto (`CLAUDE.md`, que não segue no repositório final; o essencial está em `PROCESSO.md`) para o Claude Code, com o que está **decidido**, **proposto** e **em aberto**. Depois trabalho por fases pequenas e testáveis: o Claude Code corre o passo (recolher, contar, filtrar), mostra-me números e exemplos, e **eu decido** antes de avançar (por exemplo, aprovei eu o subset depois de ver as contagens por ano). No fim de cada fase atualiza-se o `CLAUDE.md`, faz-se commit e push. Dentro do pipeline, a API do Claude será usada para extrair a questão jurídica e classificar divergências, sempre com citações verificadas por automático. **[completar no fim com o fluxo da extração e do juiz]**
 
 ## Diário (uma linha por pedido relevante)
 
@@ -35,7 +35,7 @@ Planeei o projeto com o Claude (claude.ai) e deixei tudo escrito no `CLAUDE.md`,
 ## O que funcionou bem
 
 - **Decidir com números:** indexar tudo (barato) e contar por ano antes de fixar o intervalo; medir o filtro com uma amostra aleatória em vez de supor que funcionava.
-- **Testar o parser com HTML real** (`testsexemplos/`) antes de ir à rede.
+- **Testar o parser com HTML real** (páginas de exemplo guardadas durante o desenvolvimento) antes de ir à rede.
 - **Recolha retomável** (cache + chave primária por acórdão): quando a ligação falhou, bastou reiniciar sem repetir pedidos.
 - **Trabalho por fases com paragem para aprovação**, o que apanhou o problema do recall antes de gastar uma hora a recolher o filtro errado.
 
@@ -47,7 +47,7 @@ Planeei o projeto com o Claude (claude.ai) e deixei tudo escrito no `CLAUDE.md`,
 - **Ambiente sem acesso ao DGSI:** a cloud começou por bloquear `dgsi.pt` (403), depois deu timeout durante dias (o site também esteve em baixo, como confirmaste), e só depois respondeu. Perdi tempo; a IA não consegue contornar uma política de rede e deve dizê-lo em vez de insistir.
 - **`.gitignore` partido:** o ficheiro original não terminava com newline, a linha que acrescentei colou-se a `cache/` e a base de dados foi parar ao git. Detetado por um hook de verificação; corrigido e removida do controlo de versões (continua no histórico, é pequena).
 - **Recolha interrompida:** a meio, o proxy do ambiente mudou de porta e o processo em segundo plano ficou a falhar com erros de rede; reiniciei. Ao reiniciar, um `pkill` apanhou o meu próprio shell (erro meu), tive de relançar.
-- **Instruções contraditórias:** o `CLAUDE.md` mandava trabalhar no `main` mas a sessão estava ligada a outro branch; só fiz push para o `main` depois de o confirmares explicitamente.
+- **Instruções contraditórias:** o ficheiro de contexto mandava trabalhar no `main` mas a sessão estava ligada a outro branch; só fiz push para o `main` depois de o confirmares explicitamente.
 - **Filtro de descritores com recall baixo (~67–75% na amostra):** a IA propôs um filtro razoável, mas só a medição mostrou que perdia 1 em cada 4 acórdãos laborais. É uma limitação assumida (ver `NOTA_DECISOES.md`, 4.1).
 - **Estimativas, não medições:** os ~15 h de recolha completa e os ~1700 acórdãos da 4.ª Secção são contas minhas a partir de amostras pequenas.
 - **Extração devolvia vazio (Fase 3):** na primeira corrida de 50, 43 respostas vieram vazias ("JSON inválido"). O modelo `claude-haiku-5-5` (via OpenRouter) gastava os 700 tokens de saída a "raciocinar" antes de escrever. Custou ~0,05 USD de chamadas inúteis. Corrigi desligando o raciocínio (`reasoning: {enabled: false}`) e subindo o limite para 1000 tokens: ficou mais barato e mais rápido (0,018 USD, 34 s para 50 acórdãos).

@@ -20,10 +20,8 @@ Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões diver
 |---|---|
 | `README.md` | Este mapa, os entregáveis e como correr o projeto |
 | `NOTA_DECISOES.md` | **Porquê** de cada decisão: subset, recolha responsável, método de temas e de divergências, limitações |
+| `PROCESSO.md` | **Todos os passos do trabalho, por ordem, e a orquestração das peças** (o único ficheiro extra) |
 | `AI_USAGE.md` | Como se usou a IA: ferramentas, fluxo, diário, o que funcionou e o que falhou, validação |
-| `GUIA.md` | Guia em linguagem simples: o que foi feito, o que falta, calendário, glossário (para o autor perceber o trabalho) |
-| `CLAUDE.md` | Instruções e contexto técnico para o assistente de IA (Claude Code); regras de trabalho e estado das fases |
-| `ENUNCIADO.md` | O enunciado original do desafio |
 | `scraper.py` | Programa que lê o DGSI e guarda numa base SQLite (`indexar`, `detalhes`, `stats`) |
 | `filtro_laboral.txt` | Palavras-chave laborais usadas para escolher que acórdãos abrir (lido pelo scraper) |
 | `relatores_4secao.txt` | Relatores que julgam quase só na 4.ª Secção, usados na 2.ª etapa da recolha |
@@ -37,7 +35,6 @@ Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões diver
 | `pipeline/guardar_ia.py` | Guarda/restaura as tabelas da IA em `dados/ia_tabelas.json.gz` |
 | `app/app.py`, `app/dados.json`, `app/sinonimos.json` | A aplicação Streamlit, os dados só-leitura que ela lê e a lista de sinónimos da pesquisa |
 | `requirements.txt`, `app/requirements.txt` | Dependências do pipeline e da app |
-| `testsexemplos/` | HTML de exemplo (um acórdão e uma lista) para testar o parser sem rede |
 | `dados/acordaos.db.gz` | Cópia comprimida da base de dados recolhida (antes das fichas da IA) |
 | `dados/ia_tabelas.json.gz` | Fichas da IA, temas e comparações (pequeno) |
 | `data/`, `cache/` | Base de dados e páginas descarregadas; locais, **não** vão para o git |

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Etapa 5b — viragens: distingue divergência isolada de viragem de entendimento.
 
-Regra (CLAUDE.md 3.5): há *viragem* quando, ordenando por data, a orientação de um lado de uma
+Regra: há *viragem* quando, ordenando por data, a orientação de um lado de uma
 data difere da do outro lado de forma sustentada, com um mínimo de acórdãos de cada lado.
 
 Como se mede com as comparações já feitas (sem custos de IA):
