@@ -32,6 +32,7 @@ Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões diver
 | `pipeline/agrupar.py` | Etapa 4a: agrupa os acórdãos em temas (TF-IDF, sem custos) |
 | `pipeline/comparar.py` | Etapa 4b: o LLM compara pares do mesmo tema (mesma solução, oposta, não comparável) |
 | `pipeline/validar_auj.py` | Etapa 5: validação com o AUJ n.º 6/2024 (seleciona, extrai e compara o tema) |
+| `pipeline/viragens.py` | Etapa 5b: distingue divergência isolada de viragem (mínimo de acórdãos ligados de cada lado) |
 | `pipeline/exportar.py`, `pipeline/nomes_temas.json` | Etapa 6: gera `app/dados.json` com nomes legíveis dos temas |
 | `pipeline/guardar_ia.py` | Guarda/restaura as tabelas da IA em `dados/ia_tabelas.json.gz` |
 | `app/app.py`, `app/dados.json` | A aplicação Streamlit e os dados só-leitura que ela lê |
@@ -91,5 +92,6 @@ python pipeline/extrair.py ping                    # testa a chave
 python pipeline/extrair.py correr --amostra 50     # fichas (retomável; pára ao atingir o limite diário gratuito)
 python pipeline/agrupar.py                         # temas (cuidado: pode mudar os números dos temas)
 python pipeline/validar_auj.py selecionar && python pipeline/validar_auj.py extrair && python pipeline/validar_auj.py comparar
+python pipeline/viragens.py                        # divergência isolada ou viragem
 python pipeline/exportar.py                        # atualiza app/dados.json
 ```

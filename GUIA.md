@@ -121,6 +121,7 @@ Antes de entregar, **todos** os itens têm de estar marcados e nenhum texto pode
 | 4b (pares) | 2026-10-11 | `pipeline/comparar.py`: 28 pares comparados (3 temas), modelo gratuito: 22 válidos, 3 "mesma solução", 19 "não comparável", **0 divergências** | O tema "justa causa" é feito de casos diferentes (faltas, agressão, empréstimo), por isso "não comparável" é a resposta certa. 6 respostas recusadas por citação não literal. Falta apanhar divergências a sério (ver próximo passo) |
 | 5 (validação, a meio) | 2026-10-12 | `pipeline/validar_auj.py`: 47 acórdãos sobre responsabilidade agravada (art. 18.º LAT) com ficha; 8 pares comparados, **1 solução oposta (2011)** | Dos 53 "AUJ" que o filtro marcava, só 2 são AUJ a sério; passei a usar os acórdãos que citam o AUJ n.º 6/2024. Concluído a 2026-10-13: 41 pares, 1 oposta (2011), 10 iguais, 30 não comparáveis; depois do AUJ os acórdãos concordam |
 | 6 (app, versão 1) | 2026-10-13 | `app/app.py` (Streamlit) + `pipeline/exportar.py` -> `app/dados.json`: assunto, linha do tempo com arcos e AUJ, divergência lado a lado com citações, link para o DGSI, aviso de IA | Falta publicar (Streamlit Community Cloud) e criar a tua conta lá |
+| 6b (app, versão 2) | 2026-10-13 | Nomes legíveis dos 30 assuntos, pesquisa por palavra, viragem automática (`pipeline/viragens.py`); README e nota de decisões com resultados reais | A divergência de 2011 sai como "isolada" (poucos acórdãos de cada lado) |
 
 ## 7. Palavras que vão aparecer
 

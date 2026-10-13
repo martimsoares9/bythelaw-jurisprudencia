@@ -37,6 +37,7 @@ def main():
     for t in temas.values():
         ids = {a["doc_id"] for a in t["acordaos"]}
         t["comparacoes"] = [c for (a, b), c in comps.items() if a in ids and b in ids]
+        t["viragens"] = [dict(v) for v in con.execute("SELECT * FROM viragens WHERE a_doc IN (%s)" % ",".join("?" * len(ids)), list(ids))] if ids else []
     tot = con.execute("SELECT count(*), sum(tipo='merito') FROM extracoes WHERE valido=1").fetchone()
     out = {"gerado_de": "2026-10", "fichas": tot[0], "fichas_merito": tot[1], "total_trabalho": 1820, "temas": [t for t in temas.values() if t["acordaos"]]}
     OUT.write_text(json.dumps(out, ensure_ascii=False))

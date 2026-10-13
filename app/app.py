@@ -120,9 +120,17 @@ with aba2:
     if not div:
         st.info("A IA não encontrou soluções opostas neste assunto com os pares comparados. "
                 "Isso não prova que não existam: só se compararam acórdãos consecutivos e só uma parte da amostra.")
+    vir = {v["a_doc"]: v for v in tema.get("viragens", [])}
     for c in div:
         a, b = ac[c["a_doc"]], ac[c["b_doc"]]
         st.markdown(f'### 🟠 {a["data"]}  ↔  {b["data"]}')
+        v = vir.get(c["a_doc"])
+        if v:
+            if v["estado"] == "viragem":
+                st.success(f'**Viragem de entendimento em {v["data"]}:** {v["antes"]} acórdãos ligados antes e {v["depois"]} depois (mínimo {v["min_lado"]}).')
+            else:
+                st.info(f'**Divergência isolada, ainda não é viragem:** {v["antes"]} acórdão(s) ligado(s) do lado antigo e {v["depois"]} do lado recente; '
+                        f'são precisos pelo menos {v["min_lado"]} de cada lado para falarmos de viragem. Com mais acórdãos na amostra poderia confirmar-se.')
         st.markdown(f'**Porquê a IA diz que são opostos:** {c["justificacao"]}')
         ca, cb = st.columns(2)
         for col, x, cit, lado in ((ca, a, c["citacao_a"], "Mais antigo"), (cb, b, c["citacao_b"], "Mais recente")):
