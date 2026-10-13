@@ -76,3 +76,8 @@ A lista do DGSI não mostra a secção; só se vê abrindo cada acórdão. Abrir
 - **Sem jurista.** As classificações foram revistas por quem fez o projeto, que não tem formação jurídica, com ajuda da IA; não substitui a revisão de um jurista. A taxa de acerto da revisão está na secção 3 quando estiver feita.
 - **"Mesma solução" por transitividade:** a viragem assume que acórdãos ligados em cadeia por "mesma solução" têm a mesma orientação; é uma aproximação.
 
+**4.5 Melhorias futuras**
+- Agrupar com *embeddings* multilingues (sentence-transformers) e HDBSCAN em vez de TF-IDF; requer acesso ao HuggingFace, bloqueado no ambiente de trabalho. Mudaria os temas, por isso obrigaria a refazer os nomes e as comparações.
+- Fichas para os 1820 acórdãos (hoje 370) e comparar cada acórdão com os mais parecidos, não só com o seguinte; requer um modelo com crédito ou vários dias de quota gratuita.
+- Usar um modelo mais forte como juiz de pares e rever uma amostra maior com um jurista.
+
