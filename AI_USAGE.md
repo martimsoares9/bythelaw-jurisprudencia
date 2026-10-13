@@ -11,7 +11,7 @@ o que tiveste de corrigir ou o que aprendeste.
 
 - **Claude (claude.ai):** planeamento, explicação do domínio jurídico (acórdão, sumário, descritores), geração do scraper inicial, resolução de erros.
 - **Claude Code (agente na cloud, sobre este repositório):** corre o scraper contra o DGSI, corrige bugs, escreve o pipeline, faz commits e push. Os commits levam `Co-Authored-By: Claude`.
-- **Previstos (por usar):** API da Anthropic no pipeline (modelo barato para extração, modelo mais forte para o juiz de pares), `sentence-transformers` e HDBSCAN para os temas. **[POR FAZER — atualizar com os modelos realmente usados]**
+- **Usados no pipeline:** `claude-haiku-5-5` (via OpenRouter) para 264 fichas; `nvidia/nemotron-3-super-120b-a12b:free` para 106 fichas e para todas as comparações de pares (sem crédito para um modelo mais forte); TF-IDF (scikit-learn) para os temas, porque o HuggingFace estava bloqueado (`sentence-transformers` e HDBSCAN ficaram por usar). Código escrito com o Claude Code.
 
 ## Fluxo de trabalho (resumo)
 
@@ -66,5 +66,5 @@ Planeei o projeto com o Claude (claude.ai) e deixei tudo escrito no `CLAUDE.md`,
 ## Validação do que a IA produziu
 
 - **Já feito:** amostra aleatória de 150 acórdãos para medir o recall do filtro (resultado acima).
-- **Extração por IA, amostra de 50 (2026-10-10):** 50/50 com citação literal válida; 38 mérito, 9 processual, 3 admissibilidade; confiança média 0,86; 10 sem normas; custo 0,00036 USD/acórdão (≈ 0,66 USD para os 1820). **[POR FAZER]** revisão manual dos 50 para medir o acerto real.
-- **[POR FAZER]** Juiz de pares: teste com AUJ como verdade-terreno e 25 casos revistos à mão, com taxa de acerto e exemplos de erros.
+- **Extração por IA, amostra de 50 (2026-10-10):** 50/50 com citação literal válida; 38 mérito, 9 processual, 3 admissibilidade; confiança média 0,86; 10 sem normas; custo 0,00036 USD/acórdão (≈ 0,66 USD para os 1820). A revisão manual (25 veredictos do juiz de pares, 18/23 certos) está mais abaixo; as fichas em si não foram revistas uma a uma, só amostradas.
+- **Juiz de pares (2026-10-13):** validado com o AUJ n.º 6/2024 (a divergência de 2011 encontrada é a que o AUJ veio resolver) e com 25 casos revistos à mão: 18 concordo, 5 discordo, 2 não sei (acerto 78% nos 23 com opinião). Todos os desacordos são "não comparável" a mais. Detalhe na `NOTA_DECISOES.md`, secção 3.

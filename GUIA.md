@@ -102,7 +102,7 @@ Antes de entregar, **todos** os itens têm de estar marcados e nenhum texto pode
 **O que só tu podes fazer**
 - [ ] Criar a chave da API da Anthropic e pô-la no `.env` (antes da Fase 3)
 - [ ] Criar a conta de alojamento da app (Streamlit Community Cloud ou Hugging Face), até 10-13
-- [ ] Rever 25 classificações na Fase 5 (eu explico os termos jurídicos)
+- [x] Rever 25 classificações na Fase 5 (feito: 18 C, 5 D, 2 ?)
 - [ ] Gravar o vídeo (10-15 de manhã) e fazer a entrega
 
 **Plano B**
