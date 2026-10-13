@@ -10,7 +10,7 @@ import gzip, json, sqlite3, sys
 from pathlib import Path
 
 DB, F = Path("data/acordaos.db"), Path("dados/ia_tabelas.json.gz")
-TABELAS = ["extracoes", "temas", "comparacoes"]
+TABELAS = ["extracoes", "temas", "comparacoes", "tema_auj", "viragens"]
 
 con = sqlite3.connect(DB)
 if sys.argv[1:] == ["guardar"]:
