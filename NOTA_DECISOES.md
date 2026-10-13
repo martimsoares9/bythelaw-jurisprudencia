@@ -68,3 +68,11 @@ A lista do DGSI não mostra a secção; só se vê abrindo cada acórdão. Abrir
 - Dois modelos diferentes fizeram as fichas. Numa amostra de 50 comparados, o tipo da decisão coincidiu em 46/50 e as citações foram 100% válidas nos dois.
 - O agrupamento por TF-IDF é menos fino que os *embeddings* planeados.
 - O marcador de AUJ do filtro (`auj=1`) apanha 53 acórdãos, mas só 2 são AUJ a sério; os restantes citam ou discutem uniformização. A validação usa os acórdãos que citam o AUJ n.º 6/2024.
+
+**4.4 O que os resultados não permitem concluir**
+- **A amostra de fichas não é aleatória.** Cerca de 316 foram escolhidas ao acaso, mas 42 foram escolhidas de propósito (o tema do AUJ n.º 6/2024, por expressão regular) e 12 vieram depois ao acaso. Por isso o tema do AUJ tem muito mais acórdãos do que os outros, e os números de divergências **não são uma taxa do tribunal inteiro**.
+- **A validação assenta num só AUJ.** Encontrar a divergência que um AUJ resolveu é um bom sinal, mas é um caso; não permite falar de taxa de deteção.
+- **O juiz de pares foi um modelo gratuito** (`nvidia/nemotron-3-super-120b-a12b:free`) e não o modelo mais forte previsto no plano (sem crédito). Pode errar mais; as citações verificadas limitam as invenções, não os erros de interpretação.
+- **Sem jurista.** As classificações foram revistas por quem fez o projeto, que não tem formação jurídica, com ajuda da IA; não substitui a revisão de um jurista. A taxa de acerto da revisão está na secção 3 quando estiver feita.
+- **"Mesma solução" por transitividade:** a viragem assume que acórdãos ligados em cadeia por "mesma solução" têm a mesma orientação; é uma aproximação.
+
