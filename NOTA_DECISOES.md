@@ -1,7 +1,7 @@
 # Nota de decisões
 
 > Entregável do enunciado: *"uma nota curta sobre as decisões tomadas: subset escolhido, abordagem para agrupar por tema e para detetar divergências, e principais limitações"*.
-> Estado: as secções 1 e 4 estão escritas com dados reais. As secções 2 e 3 descrevem o método **planeado** e serão confirmadas com resultados quando as etapas estiverem feitas; o que ainda não foi feito está marcado com **[POR FAZER]**.
+> Estado a 2026-10-13: subset, temas e deteção de divergências estão feitos e medidos; a revisão manual de 25 classificações está **[POR FAZER]**.
 
 ## 1. Subset escolhido — [FEITO]
 
@@ -17,24 +17,27 @@
 
 **Recolha responsável.** Pausa de 1,5 s mais variação aleatória entre pedidos, um pedido de cada vez, `User-Agent` com nome e email, cache local (nunca se pede a mesma página duas vezes), recuo em erros 429/5xx, leitura do `robots.txt` (o do DGSI devolve 404, ou seja, não existe e não declara restrições). Só se abrem os acórdãos candidatos, não o site todo.
 
-## 2. Agrupar por tema — [POR FAZER]
+## 2. Agrupar por tema — [FEITO]
 
-Método planeado (detalhe em `CLAUDE.md`, secção 3.5):
+1. **Ficha por acórdão (IA).** Um modelo lê o **sumário** (o resumo oficial do tribunal) e o excerto final da decisão e devolve JSON estrito: questão jurídica (sem nomes de partes), normas, solução em uma frase, tipo (mérito, admissibilidade, processual, outro) e uma **citação literal do sumário**. Um programa verifica que a citação existe mesmo no sumário; se não existir, pede uma correção e, se ainda falhar, guarda só o maior bloco literal (nunca texto inventado pelo modelo). Resultado: **370 fichas, todas com citação válida**, das quais 278 de mérito.
+2. **Temas.** Agrupamento hierárquico (distância do cosseno) sobre TF-IDF da *questão jurídica* mais as normas citadas, só com acórdãos de mérito: **30 temas** (≥ 3 acórdãos) e 81 acórdãos sem tema. Os nomes legíveis foram escritos à mão a partir das questões de cada tema.
+3. **Um tema curado à mão** para validar: *responsabilidade agravada do empregador em acidente de trabalho (art. 18.º da LAT)*, selecionado por expressão regular no sumário (47 acórdãos, 42 de mérito).
 
-1. Um modelo de IA lê o **sumário** de cada acórdão (o resumo oficial do tribunal) e extrai: a questão jurídica (sem nomes de partes), as normas citadas, a solução em uma frase e uma citação literal do sumário que a sustenta. A citação tem de existir mesmo no sumário; senão a resposta é rejeitada.
-2. Agrupam-se as **questões jurídicas** (não o texto todo) por semelhança, com *embeddings* e HDBSCAN, juntando a referência às normas.
-3. Cada tema recebe um nome gerado pelo modelo e 3–5 temas são verificados à mão.
+*Porquê assim:* o sumário é o campo mais denso e fiável; agrupar pela questão e não pelo texto todo evita juntar acórdãos só por partilharem factos. **Desvio do plano:** o plano era usar *embeddings* (sentence-transformers) e HDBSCAN, mas o HuggingFace está bloqueado no ambiente de trabalho; TF-IDF é mais simples, gratuito e deu temas legíveis. Revi à mão dois temas: "justa causa" está coerente; "subsídio de Natal e férias" mistura duas questões próximas.
 
-*Porquê assim:* o sumário é o campo mais denso e fiável; agrupar pela questão e não pelo texto evita juntar acórdãos só porque partilham factos ou nomes.
-
-## 3. Detetar divergências — [POR FAZER]
+## 3. Detetar divergências — [FEITO, validação manual por fazer]
 
 Princípio: **só se compara o que é comparável.** Duas decisões opostas sobre factos diferentes não são uma divergência.
 
-- Dentro de cada tema, só se comparam pares com a questão muito próxima.
-- Um modelo mais forte atua como "juiz de pares": dados dois sumários (o mais antigo e o mais recente), responde `mesma_solucao`, `solucao_oposta` ou `nao_comparavel`, com uma citação de cada lado (também verificada). `nao_comparavel` é uma resposta legítima e esperada.
-- **Divergência** = soluções opostas que coexistem. **Viragem** = a orientação dominante muda de forma sustentada; marca-se quando, ordenando por data, a maioria das soluções antes e depois de uma data difere, com um mínimo de acórdãos de cada lado.
-- **Validação:** (a) ver se o sistema deteta as divergências que motivaram os AUJ da 4.ª Secção; (b) rever à mão 25 classificações e reportar a taxa de acerto e exemplos de erros. **[resultados: POR FAZER]**
+- Um modelo faz de "juiz de pares": dados dois sumários (o mais antigo e o mais recente do mesmo tema), responde `mesma_solucao`, `solucao_oposta` ou `nao_comparavel`, com uma justificação e **uma citação literal de cada lado**, verificada por programa. `nao_comparavel` é uma resposta legítima e esperada.
+- Para poupar pedidos compara-se cada acórdão com o seguinte, por data, dentro do tema.
+- **Divergência** = soluções opostas que coexistem. **Viragem** = a orientação dominante muda de forma sustentada. **Não implementei o cálculo automático de viragem**: com tão poucos pares por tema não seria fiável; a app mostra as divergências e a data do AUJ.
+
+**Validação com um acórdão de uniformização (AUJ).** O AUJ n.º 6/2024 fixou o nexo de imputação da responsabilidade agravada do empregador. Comparei 33 pares válidos desse tema (2010–2026): **1 solução oposta, 7 mesma solução, 25 não comparáveis**. A divergência (2011-05-18 contra 2011-10-26) é sobre se é preciso provar a culpa do empregador quando se invoca a inobservância de regras de segurança, que é a questão que o AUJ veio resolver; depois do AUJ os acórdãos seguintes concordam. Nos 22 pares válidos de outros temas não houve nenhuma divergência (3 iguais, 19 não comparáveis).
+
+**Honestidade sobre o resultado:** uma divergência em 55 pares válidos é pouco. Em 44 dos 55 a IA respondeu "não comparável" porque o tema é largo e junta subquestões; isso mostra que o cuidado de não forçar divergências funciona, mas também que a cobertura é baixa. Um método melhor compararia cada acórdão com os mais parecidos (não só o seguinte) e usaria temas mais estreitos; ficou por falta de pedidos (ver 4.3).
+
+**Ainda por fazer:** [POR FAZER] revisão manual de 25 classificações com a taxa de acerto e exemplos de erros.
 
 ## 4. Limitações
 
@@ -59,3 +62,9 @@ A lista do DGSI não mostra a secção; só se vê abrindo cada acórdão. Abrir
 - O índice do DGSI muda enquanto se recolhe (entram acórdãos novos no topo); duplicados são inofensivos porque cada acórdão tem um identificador único.
 - Sumários de qualidade desigual; nem todos os acórdãos decidem o mérito (os de admissibilidade são excluídos).
 - A classificação é automática e pode conter erros; a app terá um aviso visível.
+
+**4.3 Custos e limites da IA**
+- A extração e o juiz usaram a conta gratuita do OpenRouter, sem crédito: o `claude-haiku-5-5` serviu para 264 fichas (cerca de 0,11 USD no total) até a conta recusar (erro 402), e depois usou-se um modelo gratuito (`nvidia/nemotron-3-super-120b-a12b:free`, 106 fichas e todas as comparações), limitado a **50 pedidos por dia**. Por isso só **370 de 1820** acórdãos têm ficha (20%).
+- Dois modelos diferentes fizeram as fichas. Numa amostra de 50 comparados, o tipo da decisão coincidiu em 46/50 e as citações foram 100% válidas nos dois.
+- O agrupamento por TF-IDF é menos fino que os *embeddings* planeados.
+- O marcador de AUJ do filtro (`auj=1`) apanha 53 acórdãos, mas só 2 são AUJ a sério; os restantes citam ou discutem uniformização. A validação usa os acórdãos que citam o AUJ n.º 6/2024.

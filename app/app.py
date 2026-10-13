@@ -4,6 +4,7 @@ A app só lê `dados.json` (já processado). Não chama a IA nem o DGSI.
 Correr:  streamlit run app/app.py
 """
 import json
+import unicodedata
 from pathlib import Path
 
 import plotly.graph_objects as go
@@ -21,6 +22,16 @@ EXPLICA = {
 }
 
 
+def norm(x):
+    """Minúsculas e sem acentos, para a pesquisa não depender de acentos."""
+    return unicodedata.normalize("NFKD", (x or "").lower()).encode("ascii", "ignore").decode()
+
+
+def corresponde(a, termos):
+    texto = norm(" ".join([a["questao"], a["solucao"] or "", a.get("normas") or "", a["processo"]]))
+    return all(t in texto for t in termos)
+
+
 @st.cache_data
 def carregar():
     return json.loads((Path(__file__).parent / "dados.json").read_text())
@@ -32,11 +43,20 @@ temas = {t["id"]: t for t in dados["temas"]}
 st.title("⚖️ Onde e quando o tribunal mudou de opinião")
 st.caption("Supremo Tribunal de Justiça · 4.ª Secção (direito do trabalho) · 2010–2026 · fonte: dgsi.pt")
 st.warning("**Classificação automática por IA, pode conter erros.** As citações são verificadas por programa (têm de existir "
-           "no sumário do acórdão), mas a interpretação não foi validada por um jurista. Amostra de 358 acórdãos de um "
-           "conjunto de 1820; ver as limitações na nota de decisões.", icon="⚠️")
+           "no sumário do acórdão), mas a interpretação não foi validada por um jurista. "
+           f"Amostra de {dados['fichas']} acórdãos ({dados['fichas_merito']} de mérito) de um conjunto de {dados['total_trabalho']}; "
+           "ver as limitações na nota de decisões.", icon="⚠️")
 
-ordem = sorted(temas, key=lambda i: (i != 100, -len(temas[i]["comparacoes"]), -len(temas[i]["acordaos"])))
-tid = st.sidebar.selectbox("Escolhe um assunto", ordem, format_func=lambda i: f'{temas[i]["nome"]} ({len(temas[i]["acordaos"])} acórdãos)')
+pesquisa = st.sidebar.text_input("🔎 Pesquisar por palavra", placeholder="ex.: férias, justa causa, art. 18.º")
+termos = [norm(t) for t in pesquisa.split() if t.strip()]
+acertos = {i: [a for a in t["acordaos"] if corresponde(a, termos)] for i, t in temas.items()} if termos else {i: t["acordaos"] for i, t in temas.items()}
+ordem = sorted((i for i in temas if acertos[i]), key=lambda i: (i != 100, -len(temas[i]["comparacoes"]), -len(temas[i]["acordaos"])))
+if not ordem:
+    st.sidebar.error("Nenhum acórdão com essas palavras.")
+    st.stop()
+if termos:
+    st.sidebar.success(f"{sum(len(acertos[i]) for i in ordem)} acórdãos em {len(ordem)} assuntos")
+tid = st.sidebar.selectbox("Escolhe um assunto", ordem, format_func=lambda i: f'{temas[i]["nome"]} ({len(acertos[i])} acórdãos)')
 tema = temas[tid]
 ac = {a["doc_id"]: a for a in tema["acordaos"]}
 comps = sorted(tema["comparacoes"], key=lambda c: ac[c["a_doc"]]["data"])
@@ -122,7 +142,9 @@ with aba2:
             st.write(c["justificacao"])
 
 with aba3:
-    for a in tema["acordaos"]:
+    if termos:
+        st.caption(f'A mostrar só os acórdãos que contêm "{pesquisa}" ({len(acertos[tid])} de {len(tema["acordaos"])}).')
+    for a in acertos[tid]:
         with st.expander(f'{a["data"]} · proc. {a["processo"]} · {a["questao"][:110]}'):
             st.markdown(f'**Questão:** {a["questao"]}')
             st.markdown(f'**Solução:** {a["solucao"]}')
