@@ -18,7 +18,7 @@ NOME = {"solucao_oposta": "Solução oposta", "mesma_solucao": "Mesma solução"
 EXPLICA = {
     "solucao_oposta": "Os dois acórdãos respondem à mesma questão de formas opostas: é uma divergência.",
     "mesma_solucao": "Os dois acórdãos respondem à mesma questão da mesma forma: o tribunal manteve a orientação.",
-    "nao_comparavel": "Tratam de questões ou factos diferentes. Não conta como divergência.",
+    "nao_comparavel": "Casos ou perguntas diferentes. É um resultado normal e não conta como divergência: o sistema prefere dizê-lo a forçar uma divergência.",
 }
 
 
@@ -106,12 +106,12 @@ if "pagina" not in st.session_state:
     st.session_state["pagina"] = INICIO
 st.sidebar.title("⚖️ Divergências STJ")
 st.sidebar.radio("Navegar", PAGINAS, key="pagina")
-st.sidebar.caption("Supremo Tribunal de Justiça · 4.ª Secção (trabalho) · 2010–2026 · fonte: dgsi.pt")
+st.sidebar.caption("STJ · 4.ª Secção · 2010–2026 · fonte: dgsi.pt")
+st.sidebar.warning("Classificação automática por IA, pode conter erros.", icon="⚠️")
 pagina = st.session_state["pagina"]
 
 AVISO = ("**Classificação automática por IA, pode conter erros.** As citações são verificadas por programa (têm de existir "
-         "no sumário do acórdão), mas a interpretação não foi validada por um jurista. "
-         f"Amostra de {dados['fichas']} acórdãos ({dados['fichas_merito']} de mérito) de um conjunto de {dados['total_trabalho']}.")
+         "no sumário do acórdão), mas a interpretação não foi validada por um jurista.")
 
 
 def glossario():
@@ -205,7 +205,7 @@ if pagina == INICIO:
     st.subheader("Como usar, em 3 passos")
     p1, p2, p3 = st.columns(3)
     for col, n, tit, txt in ((p1, "1", "Escolhe um assunto", "Por exemplo, despedimento por justa causa, férias ou acidentes de trabalho. Podes também pesquisar por palavras."),
-                             (p2, "2", "Vê a linha do tempo", "Cada ponto é um acórdão. Os arcos ligam acórdãos comparados: laranja é divergência, azul é a mesma solução, cinzento é não comparável."),
+                             (p2, "2", "Vê a linha do tempo", "Cada ponto é um acórdão e os arcos ligam acórdãos que a IA comparou (a legenda das cores está na barra lateral, em «Explorar assuntos»)."),
                              (p3, "3", "Abre a divergência", "Lê os dois acórdãos lado a lado, com a citação que justifica e o link para o original no DGSI.")):
         with col:
             with st.container(border=True):
@@ -214,7 +214,8 @@ if pagina == INICIO:
 
     st.subheader("Em números")
     m = st.columns(5)
-    m[0].metric("Acórdãos analisados", dados["fichas"])
+    m[0].metric("Acórdãos analisados", dados["fichas"],
+                help=f'Amostra de {dados["fichas"]} acórdãos ({dados["fichas_merito"]} de mérito) de um conjunto de {dados["total_trabalho"]} recolhidos.')
     m[1].metric("Assuntos", len(temas))
     m[2].metric("Pares comparados", n_pares)
     m[3].metric("Divergências", n_opostas)
@@ -229,7 +230,7 @@ if pagina == INICIO:
         with st.container(border=True):
             st.markdown(f'**Duas decisões do mesmo tribunal, em {a["data"][:4]}, sobre a mesma pergunta:** '
                         f'*{a["questao"]}*')
-            st.markdown(f'- **{a["data"]}:** {a["solucao"]}\n- **{b["data"]}:** {b["solucao"]}')
+            st.markdown(f'As duas decisões ({a["data"]} e {b["data"]}) deram respostas opostas. Podes lê-las lado a lado, com as citações.')
             st.caption("Anos depois, o STJ fixou uma orientação única sobre esta matéria (Acórdão de Uniformização n.º 6/2024). "
                        "É uma questão muito próxima da que o sistema encontrou em aberto em 2011 (a relação exata deve ser confirmada por um jurista).")
             st.button("Ver o caso completo →", on_click=ir, args=(DIVERGENCIA,), key="b_caso")
@@ -247,7 +248,6 @@ if pagina == INICIO:
             cols[i % 2].button(f'{t["nome"][:42]}…' if len(t["nome"]) > 42 else t["nome"], key=f'at{t["id"]}',
                                on_click=ir, args=(EXPLORAR, t["id"]))
     st.button("Explorar todos os assuntos →", on_click=ir, args=(EXPLORAR,), key="b_expl")
-    glossario()
 
 # ====================================================================== EXPLORAR
 elif pagina == EXPLORAR:
@@ -288,11 +288,8 @@ elif pagina == EXPLORAR:
     c1.metric("Acórdãos", len(ac))
     c2.metric("Soluções opostas", contagem["solucao_oposta"], help="Mesma pergunta, respostas contrárias.")
     c3.metric("Mesma solução", contagem["mesma_solucao"], help="Mesma pergunta, mesma resposta.")
-    c4.metric("Não comparáveis", contagem["nao_comparavel"], help="Casos ou perguntas diferentes: é um resultado normal, e não um erro.")
-    if comps:
-        st.caption("«Não comparável» é uma resposta normal: acontece quando os dois acórdãos decidem casos ou perguntas diferentes. "
-                   "O sistema prefere dizê-lo a forçar uma divergência que não existe.")
-    else:
+    c4.metric("Não comparáveis", contagem["nao_comparavel"], help="Ver a legenda na barra lateral.")
+    if not comps:
         st.info("**Este assunto ainda não tem pares comparados.** A IA só pôde comparar os assuntos maiores (há um limite diário de pedidos). "
                 "Podes ler a ficha de cada acórdão no separador «Todos os acórdãos».", icon="ℹ️")
     if tema.get("data_auj"):
@@ -303,8 +300,7 @@ elif pagina == EXPLORAR:
     with aba1:
         if comps:
             linha_do_tempo(tema, ac, comps)
-            st.caption("Cada ponto é um acórdão (passa o rato por cima para ver a pergunta). Os arcos ligam acórdãos consecutivos que a IA comparou; "
-                       "o arco laranja grosso é uma divergência.")
+            st.caption("Passa o rato por cima de um ponto para ver a pergunta desse acórdão.")
         else:
             xs = [a["data"] for a in tema["acordaos"]]
             st.write(f'{len(xs)} acórdãos entre {min(xs)[:4]} e {max(xs)[:4]}, ainda sem comparações para desenhar arcos.')
@@ -314,9 +310,17 @@ elif pagina == EXPLORAR:
             st.info("A IA não encontrou soluções opostas neste assunto com os pares comparados. "
                     "Isso não prova que não existam: só se compararam acórdãos consecutivos e só uma parte da amostra.")
         vir = {v["a_doc"]: v for v in tema.get("viragens", [])}
-        for c in div:
-            mostrar_divergencia(c, ac[c["a_doc"]], ac[c["b_doc"]], vir, tema)
-            st.divider()
+        for i, c in enumerate(div):
+            a, b = ac[c["a_doc"]], ac[c["b_doc"]]
+            v = vir.get(c["a_doc"], {})
+            etiqueta = ("revisão: provável falso positivo" if FP(c)
+                        else "o sistema contradiz-se neste caso" if v.get("estado") == "inconsistente"
+                        else "divergência isolada" if v.get("estado") == "divergencia_isolada"
+                        else "viragem" if v.get("estado") == "viragem" else "divergência")
+            with st.container(border=True):
+                st.markdown(f'🟠 **{a["data"]} ↔ {b["data"]}** · {etiqueta}')
+                st.write(c["justificacao"])
+                st.button("Ver os dois acórdãos lado a lado →", on_click=ir, args=(DIVERGENCIA,), key=f"vd{tid}_{i}")
         outros = [c for c in comps if c["resultado"] != "solucao_oposta"]
         if outros:
             st.markdown("#### Outros pares comparados")
@@ -335,12 +339,10 @@ elif pagina == EXPLORAR:
                     st.markdown(f'> {a["trecho"]}')
                 st.caption(f'Relator: {a["relator"]} · ficha feita por {a["modelo"]} (confiança {a["confianca"]})')
                 st.markdown(f'[Ver o acórdão original no DGSI]({a["url"]})')
-    glossario()
 
 # ====================================================================== DIVERGÊNCIA
 elif pagina == DIVERGENCIA:
     st.title("⚖️ A divergência que o sistema encontrou")
-    st.warning(AVISO, icon="⚠️")
     st.markdown(f"Em {n_pares} pares de acórdãos comparados pela IA, **encontrou-se {n_opostas} divergência** e {n_falsos} caso que a revisão marcou como "
                 "falso positivo. Uma divergência é um par de decisões do mesmo tribunal que respondem de forma oposta à mesma pergunta; "
                 "é o tipo de caso que, mais tarde, o STJ resolve com um Acórdão de Uniformização de Jurisprudência (AUJ).")
@@ -363,7 +365,6 @@ elif pagina == DIVERGENCIA:
                 f"- Só {dados['fichas']} de {dados['total_trabalho']} acórdãos têm ficha, e só se compararam acórdãos consecutivos.\n"
                 "- Com mais fichas e mais pares é provável que apareçam mais casos.")
     st.button("Explorar o assunto desta divergência →", on_click=ir, args=(EXPLORAR, 100), key="b_ex100")
-    glossario()
 
 # ====================================================================== SOBRE
 else:
@@ -378,10 +379,13 @@ else:
         "4. **Comparação de pares (IA):** «mesma solução», «solução oposta» ou «não comparável», com citações de cada lado.\n"
         "5. **Viragem:** distingue divergência isolada de mudança duradoura de entendimento.\n"
         "6. **Validação:** com o AUJ n.º 6/2024 e com 25 veredictos revistos à mão.")
-    st.subheader("Resultados e limites")
-    st.markdown(f"- **{dados['fichas']}** fichas ({dados['fichas_merito']} de mérito) de {dados['total_trabalho']} acórdãos; **{n_pares}** pares comparados; **{n_opostas}** divergência.\n"
-                f"- Revisão manual: **{REVISAO['certos']} certos em {REVISAO['com_opiniao']}** ({round(100 * REVISAO['certos'] / REVISAO['com_opiniao'])}%); os erros foram todos «não comparável» a mais.\n"
-                "- Um só tribunal e uma só área; dois modelos de IA (um gratuito, mais fraco); revisão por uma só pessoa sem formação jurídica.\n"
+    st.subheader("Limites")
+    st.markdown("- Só uma parte dos acórdãos tem ficha (ver «Em números», no Início); um só tribunal e uma só área.\n"
+                "- Dois modelos de IA (um gratuito, mais fraco); a revisão manual foi feita por uma só pessoa sem formação jurídica.\n"
+                "- A IA é cautelosa: errou na revisão por dizer «não comparável» a mais, mas já houve um falso positivo (assinalado na página da divergência).\n"
                 "- A pesquisa é por palavras com sinónimos, e não por sentido; a app não usa IA em tempo real.")
     st.info("Esta ferramenta ajuda a **encontrar** possíveis divergências. Não substitui a leitura nem a opinião de um jurista.", icon="⚠️")
+
+# Glossário: uma só vez, na barra lateral, em todas as páginas
+with st.sidebar:
     glossario()

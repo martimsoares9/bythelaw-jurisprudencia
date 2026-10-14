@@ -78,7 +78,7 @@ streamlit run app/app.py
 
 A app só lê `app/dados.json`. Para a publicar: Streamlit Community Cloud, ficheiro principal `app/app.py`.
 
-**O que tem a app** (4 páginas, menu à esquerda): **Início** (como usar em 3 passos, números, caso em destaque, glossário), **Explorar assuntos** (31 assuntos, pesquisa por palavras com sinónimos, linha do tempo com arcos, divergências lado a lado com as citações e o link para o DGSI, fichas de cada acórdão), **Divergência encontrada** e **Sobre o projeto** (método, resultados e limites). Não usa IA nem o DGSI em tempo real.
+**O que tem a app** (4 páginas, menu à esquerda): **Início** (como usar em 3 passos, números, caso em destaque), **Explorar assuntos** (31 assuntos, pesquisa por palavras com sinónimos, linha do tempo com arcos, divergências lado a lado com as citações e o link para o DGSI, fichas de cada acórdão), **Divergência encontrada** (os dois acórdãos lado a lado) e **Sobre o projeto** (método e limites). O glossário e o aviso de IA estão na barra lateral. Não usa IA nem o DGSI em tempo real.
 
 ## Repetir o pipeline com IA (opcional)
 
