@@ -19,7 +19,17 @@ NOME_AUJ = "Responsabilidade agravada do empregador em acidente de trabalho (art
 DATA_AUJ = "2024-11-27"  # primeira citação do AUJ n.º 6/2024 nos dados
 
 
+def revisoes():
+    """Pares já revistos à mão (revisao/pares_revistos.csv): marcam falsos positivos para a app os mostrar com aviso."""
+    f = Path("revisao/pares_revistos.csv")
+    if not f.exists():
+        return {}
+    import csv
+    return {(r["a_doc"], r["b_doc"]): r for r in csv.DictReader(f.open(encoding="utf-8"))}
+
+
 def main():
+    rev = revisoes()
     con = sqlite3.connect(DB)
     con.row_factory = sqlite3.Row
     base = """SELECT a.doc_id, a.data_acordao AS data, a.processo, a.relator, a.url, a.sumario,
@@ -33,7 +43,10 @@ def main():
         temas[t["tema_id"]] = {"id": t["tema_id"], "nome": (NOMES.get(str(t["tema_id"]), {}).get("nome") if NOMES.get(str(t["tema_id"]), {}).get("termos") == t["tema_nome"] else None) or "Tema " + str(t["tema_id"]) + ": " + t["tema_nome"], "data_auj": None, "acordaos": acs}
     comps = {}
     for c in con.execute("SELECT * FROM comparacoes WHERE valido=1"):
-        comps[(c["a_doc"], c["b_doc"])] = dict(c)
+        d = dict(c)
+        r = rev.get((c["a_doc"], c["b_doc"]))
+        d["revisao"], d["revisao_nota"] = (r["veredicto_revisao"], r["nota"]) if r else (None, None)
+        comps[(c["a_doc"], c["b_doc"])] = d
     for t in temas.values():
         ids = {a["doc_id"] for a in t["acordaos"]}
         t["comparacoes"] = [c for (a, b), c in comps.items() if a in ids and b in ids]

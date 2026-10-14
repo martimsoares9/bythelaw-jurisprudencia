@@ -8,6 +8,7 @@ Funciona com pares escolhidos de qualquer forma (consecutivos ou por semelhança
   - `divergencia_isolada`: um dos grupos tem menos de MIN_LADO acórdãos (pouca prova para falar de orientação);
   - `viragem`: ambos os grupos têm >= MIN_LADO acórdãos e o grupo antigo é anterior ao recente (a maior parte do grupo
     de A é anterior à maior parte do de B);
+  - `inconsistente`: o par oposto está ligado por cadeias de `mesma_solucao` (o juiz contradiz-se); precisa de leitura humana.
   - `divergencia_coexistente`: ambos os grupos têm >= MIN_LADO mas as datas se sobrepõem (duas orientações em simultâneo).
 MIN_LADO é pequeno (2) porque a amostra é pequena; é configurável.
 
@@ -49,7 +50,11 @@ def analisar(con, tema_id):
             continue
         ga, gb = sorted(grupos[raiz(p["a_doc"])]), sorted(grupos[raiz(p["b_doc"])])
         a, b = p["a_doc"], p["b_doc"]
-        if len(ga) < MIN_LADO or len(gb) < MIN_LADO:
+        if raiz(a) == raiz(b):
+            # O juiz disse "oposta" para A e B, mas cadeias de "mesma solução" ligam-nos: o sistema contradiz-se.
+            # Não se conclui nada sobre viragem; o caso precisa de leitura humana.
+            estado = "inconsistente"
+        elif len(ga) < MIN_LADO or len(gb) < MIN_LADO:
             estado = "divergencia_isolada"
         elif ga[(3 * len(ga)) // 4 - (1 if len(ga) % 4 == 0 else 0)] < gb[len(gb) // 4]:
             estado = "viragem"

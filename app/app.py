@@ -83,7 +83,9 @@ for t in dados["temas"]:
     for c in t["comparacoes"]:
         pares[(c["a_doc"], c["b_doc"])] = c
 n_pares = len(pares)
-n_opostas = sum(c["resultado"] == "solucao_oposta" for c in pares.values())
+FP = lambda c: c.get("revisao") == "falso_positivo"  # par marcado como falso positivo na revisão (revisao/pares_revistos.csv)
+n_opostas = sum(c["resultado"] == "solucao_oposta" and not FP(c) for c in pares.values())
+n_falsos = sum(c["resultado"] == "solucao_oposta" and FP(c) for c in pares.values())
 acordao_por_id = {a["doc_id"]: a for t in dados["temas"] for a in t["acordaos"]}
 
 
@@ -165,8 +167,14 @@ def linha_do_tempo(tema, ac, comps):
 def mostrar_divergencia(c, a, b, vir=None, tema=None):
     st.markdown(f'### 🟠 {a["data"]}  ↔  {b["data"]}')
     v = (vir or {}).get(c["a_doc"])
-    if v:
-        if v["estado"] == "viragem":
+    if FP(c):
+        st.warning("**Revisão: provável falso positivo.** " + (c.get("revisao_nota") or "") +
+                   " (avaliação feita à mão, a confirmar por um jurista.) Não conta como divergência.", icon="🔎")
+    elif v:
+        if v["estado"] == "inconsistente":
+            st.warning("**O sistema contradiz-se neste caso:** o juiz de pares diz que estes dois acórdãos são opostos, mas outros pares ligam-nos "
+                       "como «mesma solução». É um sinal de que a classificação automática é pouco fiável aqui e de que o caso precisa de leitura humana.", icon="⚠️")
+        elif v["estado"] == "viragem":
             st.success(f'**Viragem de entendimento em {v["data"]}:** {v["antes"]} acórdãos ligados antes e {v["depois"]} depois (mínimo {v["min_lado"]}).')
         elif v["estado"] == "divergencia_coexistente":
             st.info(f'**Divergência que coexiste:** há {v["antes"]} acórdãos de uma orientação e {v["depois"]} da outra, em épocas que se sobrepõem. '
@@ -214,7 +222,7 @@ if pagina == INICIO:
                 help=f'{REVISAO["certos"]} certos em {REVISAO["com_opiniao"]} veredictos com opinião, de {REVISAO["total"]} revistos à mão.')
 
     st.subheader("Caso em destaque")
-    opostas = [c for c in pares.values() if c["resultado"] == "solucao_oposta"]
+    opostas = sorted((c for c in pares.values() if c["resultado"] == "solucao_oposta" and not FP(c)), key=lambda c: acordao_por_id[c["a_doc"]]["data"])
     if opostas:
         c = opostas[0]
         a, b = acordao_por_id[c["a_doc"]], acordao_por_id[c["b_doc"]]
@@ -273,7 +281,7 @@ elif pagina == EXPLORAR:
     tema = temas[tid]
     ac = {a["doc_id"]: a for a in tema["acordaos"]}
     comps = sorted(tema["comparacoes"], key=lambda c: ac[c["a_doc"]]["data"])
-    contagem = {k: sum(c["resultado"] == k for c in comps) for k in NOME}
+    contagem = {k: sum(c["resultado"] == k and not FP(c) for c in comps) for k in NOME}
 
     st.subheader(tema["nome"])
     c1, c2, c3, c4 = st.columns(4)
@@ -301,7 +309,7 @@ elif pagina == EXPLORAR:
             xs = [a["data"] for a in tema["acordaos"]]
             st.write(f'{len(xs)} acórdãos entre {min(xs)[:4]} e {max(xs)[:4]}, ainda sem comparações para desenhar arcos.')
     with aba2:
-        div = [c for c in comps if c["resultado"] == "solucao_oposta"]
+        div = sorted((c for c in comps if c["resultado"] == "solucao_oposta"), key=FP)  # confirmadas primeiro
         if not div:
             st.info("A IA não encontrou soluções opostas neste assunto com os pares comparados. "
                     "Isso não prova que não existam: só se compararam acórdãos consecutivos e só uma parte da amostra.")
@@ -333,17 +341,20 @@ elif pagina == EXPLORAR:
 elif pagina == DIVERGENCIA:
     st.title("⚖️ A divergência que o sistema encontrou")
     st.warning(AVISO, icon="⚠️")
-    st.markdown("Em 55 pares de acórdãos comparados pela IA, **encontrou-se uma divergência**: duas decisões do mesmo tribunal e da mesma secção, "
-                "com meses de intervalo, que respondem de forma oposta à mesma pergunta. É o tipo de caso que, mais tarde, o STJ resolve com um "
-                "Acórdão de Uniformização de Jurisprudência (AUJ).")
+    st.markdown(f"Em {n_pares} pares de acórdãos comparados pela IA, **encontrou-se {n_opostas} divergência** e {n_falsos} caso que a revisão marcou como "
+                "falso positivo. Uma divergência é um par de decisões do mesmo tribunal que respondem de forma oposta à mesma pergunta; "
+                "é o tipo de caso que, mais tarde, o STJ resolve com um Acórdão de Uniformização de Jurisprudência (AUJ).")
     ja = set()
     for t in dados["temas"]:
         ac_t = {a["doc_id"]: a for a in t["acordaos"]}
         vir_t = {v["a_doc"]: v for v in t.get("viragens", [])}
-        for c in t["comparacoes"]:
+        for c in sorted(t["comparacoes"], key=lambda c: (FP(c), ac_t[c["a_doc"]]["data"])):
             if c["resultado"] == "solucao_oposta" and (c["a_doc"], c["b_doc"]) not in ja:
                 ja.add((c["a_doc"], c["b_doc"]))
                 mostrar_divergencia(c, ac_t[c["a_doc"]], ac_t[c["b_doc"]], vir_t, t)
+                if FP(c):
+                    st.divider()
+                    continue
                 st.markdown("**Em simples:** num acórdão, o empregador só responde mais se se provar que teve **culpa**; no outro, "
                             "quando não cumpriu regras de segurança, **a culpa não é necessária**. O AUJ n.º 6/2024 veio fixar o que se exige "
                             "para esta responsabilidade (interpretação a confirmar por um jurista).")

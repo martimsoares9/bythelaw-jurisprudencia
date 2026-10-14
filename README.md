@@ -2,7 +2,7 @@
 
 Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões divergentes ao longo do tempo** (onde e quando o tribunal mudou de entendimento). Desafio ByTheLaw; fonte: [dgsi.pt](https://www.dgsi.pt). Subset: STJ, 4.ª Secção, 2010–2026.
 
-> **Estado (2026-10-13):** recolha (1820 acórdãos de trabalho), fichas por IA (370), temas (30), comparação de pares e app feitos. Falta o vídeo.
+> **Estado (2026-10-13):** recolha (1820 acórdãos de trabalho), fichas por IA (400), temas (30), comparação de pares e app feitos. Falta o vídeo.
 
 ## Entregáveis do enunciado e onde estão
 

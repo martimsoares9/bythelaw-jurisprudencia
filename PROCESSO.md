@@ -30,13 +30,13 @@ dgsi.pt ──scraper.py──▶ base SQLite (data/acordaos.db)
 | 3 | Abrir os acórdãos candidatos | `python scraper.py detalhes ...` | `lista` → tabela `acordaos` (sumário, texto…) | não |
 | 4 | Apanhar o que o filtro perdeu | `scraper.py detalhes --relatores ...` | relatores da 4.ª Secção → mais 1059 acórdãos | não |
 | 5 | Filtrar | `python pipeline/filtrar.py` | `acordaos` → `filtrados`: **1820** de mérito da 4.ª Secção | não |
-| 6 | Ficha por acórdão | `python pipeline/extrair.py correr` | sumário → tabela `extracoes` (**370** fichas, 100% com citação válida) | **sim** |
+| 6 | Ficha por acórdão | `python pipeline/extrair.py correr` | sumário → tabela `extracoes` (**400** fichas, 100% com citação válida) | **sim** |
 | 7 | Agrupar por tema | `python pipeline/agrupar.py` | questões → tabela `temas` (**30** temas) | não |
 | 8 | Fichas novas → temas | `python pipeline/atribuir_temas.py` | `extracoes` sem tema → `temas` (limiar 0,40) | não |
 | 9 | Comparar pares | `python pipeline/comparar.py correr --temas 100,1,2,4` | pares mais parecidos do mesmo tema (modo `vizinhos`; `consecutivos` foi o dos primeiros 69) → tabela `comparacoes` | **sim** |
 | 10 | Validar com um AUJ | `python pipeline/validar_auj.py selecionar/extrair/comparar` | 47 acórdãos do tema do AUJ n.º 6/2024 → comparações | **sim** |
-| 11 | Viragem | `python pipeline/viragens.py` | `comparacoes` → tabela `viragens` | não |
-| 12 | Revisão manual | `revisao/CASOS.md`, `revisao/respostas.csv` | 25 veredictos revistos: **18 certos em 23** (78%) | revisor humano |
+| 11 | Viragem | `python pipeline/viragens.py` | `comparacoes` → tabela `viragens` (viragem, coexistente, isolada ou inconsistente) | não |
+| 12 | Revisão manual | `revisao/CASOS.md`, `revisao/respostas.csv`, `revisao/pares_revistos.csv` | 25 veredictos revistos: **18 certos em 23** (78%) | revisor humano |
 | 13 | Exportar para a app | `python pipeline/exportar.py` | tabelas → `app/dados.json` | não |
 | 14 | App e publicação | `streamlit run app/app.py` | `dados.json` → app online | não |
 
@@ -56,11 +56,12 @@ dgsi.pt ──scraper.py──▶ base SQLite (data/acordaos.db)
 4. **O que correu mal e se corrigiu:** respostas vazias do modelo (raciocínio desligado), prompt que confundia "admissibilidade" com mérito, marcador de AUJ demasiado largo (53 marcados, só 2 verdadeiros), embeddings bloqueados (trocados por TF-IDF), limite diário de pedidos. Ver `AI_USAGE.md`.
 5. **Validação:** citações verificadas por programa, caso do AUJ n.º 6/2024, e revisão manual de 25 veredictos.
 
-## 5. Números finais
+## 5. Números finais (2026-10-14)
 - 21 681 acórdãos indexados · 2972 recolhidos · **1820** de mérito da 4.ª Secção.
-- **370** fichas da IA (278 de mérito) · **30** temas · **69** comparações (55 válidas): 1 solução oposta, 10 mesma solução, 44 não comparáveis.
-- Divergência encontrada: 2011-05-18 contra 2011-10-26, sobre se é preciso provar a culpa do empregador. É a questão que o AUJ n.º 6/2024 veio resolver. Classificada como **divergência isolada** (poucos acórdãos ligados de cada lado), não como viragem.
-- Revisão manual: 18 certos, 5 errados, 2 sem opinião; todos os erros são "não comparável" a mais.
+- **400** fichas da IA (299 de mérito; 264 com Haiku, 136 com Nemotron gratuito) · **30** temas · **89** comparações (71 válidas): 2 soluções opostas, 19 mesma solução, 50 não comparáveis.
+- Pares escolhidos por semelhança (os últimos 20): 16 válidos, 10 comparáveis (62%), contra 20% nos pares consecutivos.
+- Divergência candidata: 2011-05-18 contra 2011-10-26, sobre se é preciso provar a culpa do empregador (questão próxima da que o AUJ n.º 6/2024 veio resolver). O sistema marca-a como **inconsistente** (cadeias de «mesma solução» ligam os dois lados). Um segundo caso (2012 contra 2026) foi marcado como **falso positivo** (diferença de factos). **Nenhuma viragem confirmada.**
+- Revisão manual (feita antes dos pares por semelhança): 18 certos, 5 errados, 2 sem opinião; todos os erros são "não comparável" a mais.
 
 ## 6. Limitações principais
 Só 20% dos acórdãos têm ficha; um só tribunal e uma só área; dois modelos de IA diferentes; juiz de pares gratuito e mais fraco do que o previsto; amostra de fichas não aleatória (o tema do AUJ foi escolhido à mão); revisão por uma só pessoa sem formação jurídica; pesquisa da app por palavras e sinónimos, não por sentido. Detalhes na `NOTA_DECISOES.md`.
