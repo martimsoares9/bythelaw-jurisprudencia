@@ -32,6 +32,11 @@ GRUPOS = [[norm(m) for m in g] for g in json.loads((Path(__file__).parent / "sin
 GENERICAS = {"contrato", "trabalho", "trabalhador", "tribunal", "acordao", "recurso", "acao", "direito"}  # não ativam sinónimos
 
 
+def radical(t):
+    """Início da palavra usado para apanhar variantes (despedir/despedimento, faltou/faltas)."""
+    return t[:5] if len(t) >= 7 else t[:4] if len(t) == 6 else t
+
+
 def expandir(termo):
     """Devolve o termo mais os sinónimos dos grupos em que ele aparece (por palavra inteira ou início de palavra)."""
     alts = {termo}
@@ -39,7 +44,7 @@ def expandir(termo):
         return alts
     for g in GRUPOS:
         for m in g:
-            if termo == m or any(termo == w or (len(termo) >= 5 and w.startswith(termo[:5])) for w in m.split()):
+            if termo == m or any(termo == w or (len(termo) >= 6 and w.startswith(radical(termo))) for w in m.split()):
                 alts.update(g)
                 break
     return alts
@@ -48,6 +53,81 @@ def expandir(termo):
 def corresponde(a, termos):
     texto = norm(" ".join([a["questao"], a["solucao"] or "", a.get("normas") or "", a["processo"]]))
     return all(any(alt in texto for alt in expandir(t)) for t in termos)
+
+
+STOP_PT = set("""a o os as um uma uns umas de do da dos das em no na nos nas por para com sem sobre ao aos as entre ate ou e que se
+e é são ser foi era pode podem poder posso deve devem quando qual quais como quem onde quanto quantos mesmo mesma meu minha seu sua
+pelo pela pelos pelas ha ter tem tinha vez muito mais menos tambem so ja nao sim""".split())
+
+
+def tokens(q):
+    import re
+    return [t for t in re.findall(r"[a-z0-9]+", norm(q)) if t not in STOP_PT and len(t) >= 3]
+
+
+@st.cache_resource
+def corpus():
+    """Um registo por acórdão (campos já sem acentos) e o primeiro assunto onde aparece."""
+    docs, vistos = [], set()
+    for t in dados["temas"]:
+        for a in t["acordaos"]:
+            if a["doc_id"] in vistos:
+                continue
+            vistos.add(a["doc_id"])
+            docs.append({"a": a, "tema": t["id"],
+                         "campos": [(3, norm(a["questao"])), (2, norm(a["solucao"])), (2, norm(a.get("normas") or "")), (1, norm(a.get("trecho") or ""))]})
+    return docs
+
+
+def pesquisar(q, limite=20):
+    """Ordena os acórdãos por relevância (BM25 simplificado). Não é IA nem pesquisa por sentido: é pesquisa por palavras,
+    mas por ordem de relevância e aceita frases. As palavras escritas valem mais do que os sinónimos (peso 0,5), cada palavra
+    conta uma só vez (o melhor dos seus sinónimos) e os acórdãos que cobrem mais palavras da pergunta sobem."""
+    import math
+    termos = tokens(q)
+    if not termos:
+        return [], []
+    docs = corpus()
+    N = len(docs)
+    comprimentos = [sum(len(c) for _, c in d["campos"]) for d in docs]
+    media = sum(comprimentos) / max(N, 1)
+    pontos = [0.0] * N
+    cobertos = [0] * N
+    usados = set()
+    cache_df = {}
+
+    def df_de(alt):
+        if alt not in cache_df:
+            cache_df[alt] = sum(any(alt in c for _, c in d["campos"]) for d in docs)
+        return cache_df[alt]
+
+    def bm25(d, i, alt):
+        df = df_de(alt)
+        if not df:
+            return 0.0
+        tf = sum(peso * c.count(alt) for peso, c in d["campos"])
+        if not tf:
+            return 0.0
+        idf = math.log(1 + (N - df + 0.5) / (df + 0.5))
+        return idf * tf * 2.2 / (tf + 1.2 * (0.25 + 0.75 * comprimentos[i] / media))
+
+    for t in termos:
+        proprias = {t} | ({radical(t)} if len(t) >= 6 and t not in GENERICAS else set())
+        sinonimos = expandir(t) - proprias
+        usados |= expandir(t) - {t}
+        for i, d in enumerate(docs):
+            a = max((bm25(d, i, alt) for alt in proprias), default=0.0)
+            b = 0.5 * max((bm25(d, i, alt) for alt in sinonimos), default=0.0)
+            m = max(a, b)
+            if m > 0:
+                pontos[i] += m
+                cobertos[i] += 1
+    for i in range(N):
+        pontos[i] *= 1 + 0.6 * cobertos[i] / len(termos)  # bónus por cobrir mais palavras da pergunta
+    ordem = sorted(range(N), key=lambda i: -pontos[i])
+    topo_p = pontos[ordem[0]] if ordem else 0
+    achados = [(pontos[i], docs[i]) for i in ordem if pontos[i] > 0 and pontos[i] >= 0.4 * topo_p][:limite]
+    return achados, sorted(usados)
 
 
 @st.cache_data
@@ -95,7 +175,7 @@ def ir(pagina, assunto=MANTER, pesquisa=None):
     if assunto is not MANTER:
         st.session_state["assunto"] = assunto
     if pesquisa is not None:
-        st.session_state["pesquisa"] = pesquisa
+        st.session_state["pesquisa"] = st.session_state["ultima_pesquisa"] = pesquisa
 
 
 def pesquisa_do_hall():
@@ -205,7 +285,7 @@ if pagina == HALL:
     st.markdown("Junta as decisões do Supremo Tribunal de Justiça que tratam do **mesmo problema** e mostra se o tribunal "
                 "respondeu sempre da mesma forma ou se mudou de opinião. Direito do trabalho, 2010–2026.")
     st.text_input("🔎 Procura um tema", key="busca_hall", on_change=pesquisa_do_hall,
-                  placeholder="por exemplo: despedir, férias, assédio  (Enter)")
+                  placeholder="uma palavra ou uma pergunta: despedir, férias, acidente a caminho do trabalho  (Enter)")
     st.markdown("##### Ou escolhe o que queres fazer")
     for emoji, titulo, texto, pag, chave in (
             ("🗂️", "Explorar por assunto", "Escolhe um assunto e vê os acórdãos numa linha do tempo.", EXPLORAR, "c_expl"),
@@ -214,7 +294,7 @@ if pagina == HALL:
         with st.container(border=True):
             col_t, col_b = st.columns([4, 1], vertical_alignment="center")
             col_t.markdown(f"**{emoji} {titulo}**  \n{texto}")
-            col_b.button("Abrir →", on_click=ir, args=(pag, None if pag == EXPLORAR else MANTER), key=chave)
+            col_b.button("Abrir →", on_click=ir, args=(pag, None, "") if pag == EXPLORAR else (pag,), key=chave)
     m = st.columns(4)
     m[0].metric("Acórdãos", dados["fichas"], help=f'Amostra de {dados["fichas"]} acórdãos ({dados["fichas_merito"]} de mérito) de {dados["total_trabalho"]} recolhidos.')
     m[1].metric("Assuntos", len(temas))
@@ -232,7 +312,7 @@ elif pagina == EXPLORAR:
         ac = {a["doc_id"]: a for a in tema["acordaos"]}
         comps = sorted(tema["comparacoes"], key=lambda c: ac[c["a_doc"]]["data"])
         contagem = {k: sum(c["resultado"] == k and not FP(c) for c in comps) for k in NOME}
-        st.button("← Todos os assuntos", on_click=ir, args=(EXPLORAR, None), key="voltar_assuntos")
+        st.button("← Voltar aos assuntos", on_click=ir, args=(EXPLORAR, None), key="voltar_assuntos")
         st.subheader(tema["nome"])
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Acórdãos", len(ac))
@@ -291,32 +371,43 @@ elif pagina == EXPLORAR:
     else:
         # ------------------------------------------------------------ lista de assuntos
         st.title("🗂️ Assuntos")
-        pesquisa = st.text_input("🔎 Procura por palavras", key="pesquisa", placeholder="por exemplo: despedir, férias, assédio")
-        termos = [norm(t) for t in pesquisa.split() if t.strip()]
-        acertos = {i: [a for a in t["acordaos"] if corresponde(a, termos)] for i, t in temas.items()} if termos else {i: t["acordaos"] for i, t in temas.items()}
-        ordem = sorted((i for i in temas if acertos[i]), key=lambda i: (i != 100, not temas[i]["comparacoes"], -len(temas[i]["comparacoes"]), -len(temas[i]["acordaos"])))
-        if termos:
-            ext = sorted({a for t in termos for a in expandir(t)} - set(termos))
-            st.caption(f"{sum(len(acertos[i]) for i in ordem)} acórdãos em {len(ordem)} assuntos"
-                       + (" · também procurei: " + ", ".join(ext[:10]) + ("…" if len(ext) > 10 else "") if ext else ""))
-        if not ordem:
-            st.error("Nenhum acórdão com essas palavras. Tenta outra palavra ou apaga a pesquisa.")
+        # O Streamlit apaga o estado de um campo que não aparece num ecrã; guardamos a pesquisa à parte
+        # para que, ao voltar de um assunto, a lista de resultados continue lá.
+        st.session_state.setdefault("pesquisa", st.session_state.get("ultima_pesquisa", ""))
+        pesquisa = st.text_input("🔎 Procura por palavras ou escreve uma pergunta", key="pesquisa",
+                                 placeholder="por exemplo: despedir, férias, acidente a caminho do trabalho")
+        st.session_state["ultima_pesquisa"] = pesquisa
+        if pesquisa.strip():
+            achados, ext = pesquisar(pesquisa)
+            if not achados:
+                st.error("Nenhum acórdão com essas palavras. Tenta outras palavras ou apaga a pesquisa.")
+            else:
+                st.caption(f"{len(achados)} acórdãos mais relevantes, por ordem de relevância"
+                           + (" · também procurei: " + ", ".join(ext[:8]) + ("…" if len(ext) > 8 else "") if ext else ""))
+                for k, (_, d) in enumerate(achados):
+                    a, t = d["a"], temas[d["tema"]]
+                    with st.container(border=True):
+                        st.markdown(f'**{a["questao"]}**')
+                        st.write(a["solucao"] if len(a["solucao"] or "") <= 260 else a["solucao"][:257] + "…")
+                        st.caption(f'{a["data"]} · {t["nome"]}')
+                        b1, b2 = st.columns([1, 1])
+                        b1.button("Ver o assunto →", on_click=ir, args=(EXPLORAR, t["id"]), key=f"rs{k}")
+                        b2.markdown(f'[Acórdão original no DGSI]({a["url"]})')
+        else:
+            def cartoes(ids, chave):
+                for i in ids:
+                    t = temas[i]
+                    with st.container(border=True):
+                        col_t, col_b = st.columns([4, 1], vertical_alignment="center")
+                        col_t.markdown(f'**{t["nome"]}**  \n{len(t["acordaos"])} acórdãos' + (f' · {len(t["comparacoes"])} pares comparados' if t["comparacoes"] else ""))
+                        col_b.button("Abrir →", on_click=ir, args=(EXPLORAR, i), key=f"{chave}{i}")
 
-        def cartoes(ids, chave):
-            for i in ids:
-                t = temas[i]
-                with st.container(border=True):
-                    col_t, col_b = st.columns([4, 1], vertical_alignment="center")
-                    col_t.markdown(f'**{t["nome"]}**  \n{len(acertos[i])} acórdãos' + (f' · {len(t["comparacoes"])} pares comparados' if t["comparacoes"] else ""))
-                    col_b.button("Abrir →", on_click=ir, args=(EXPLORAR, i), key=f"{chave}{i}")
-
-        com = [i for i in ordem if temas[i]["comparacoes"]]
-        sem = [i for i in ordem if not temas[i]["comparacoes"]]
-        if com:
+            ordem = sorted(temas, key=lambda i: (i != 100, not temas[i]["comparacoes"], -len(temas[i]["comparacoes"]), -len(temas[i]["acordaos"])))
+            com = [i for i in ordem if temas[i]["comparacoes"]]
+            sem = [i for i in ordem if not temas[i]["comparacoes"]]
             st.markdown("##### Já comparados")
             cartoes(com, "ac")
-        if sem:
-            with st.expander(f"Outros {len(sem)} assuntos (ainda sem comparações)", expanded=bool(termos and not com)):
+            with st.expander(f"Outros {len(sem)} assuntos (ainda sem comparações)"):
                 cartoes(sem, "as")
 
 # ====================================================================== DIVERGÊNCIA
@@ -356,13 +447,13 @@ else:
         "3. **Temas:** as fichas agrupam-se por semelhança de palavras.\n"
         "4. **Comparação de pares (IA):** «mesma solução», «solução oposta» ou «não comparável», com citações de cada lado.\n"
         "5. **Viragem:** distingue divergência isolada de mudança duradoura de entendimento.\n"
-        f"6. **Validação:** com o AUJ n.º 6/2024 e com 25 veredictos revistos à mão ({REVISAO['certos']} certos em {REVISAO['com_opiniao']}, "
-        f"{round(100 * REVISAO['certos'] / REVISAO['com_opiniao'])}%; os erros foram sempre «não comparável» a mais).")
+        f"6. **Validação:** com o AUJ n.º 6/2024 e com {REVISAO['total']} veredictos revistos à mão: em {REVISAO['com_opiniao']} houve opinião e a IA acertou em "
+        f"{REVISAO['certos']} ({round(100 * REVISAO['certos'] / REVISAO['com_opiniao'])}%); os erros foram sempre «não comparável» a mais.")
     st.subheader("Limites")
     st.markdown("- Só uma parte dos acórdãos tem ficha; um só tribunal e uma só área.\n"
                 "- Dois modelos de IA (um gratuito, mais fraco); revisão feita por uma só pessoa sem formação jurídica.\n"
                 "- Já houve um falso positivo (assinalado na página da divergência).\n"
-                "- A pesquisa é por palavras com sinónimos, e não por sentido; a app não usa IA em tempo real.")
+                "- A pesquisa é por relevância das palavras (e sinónimos), e não por sentido; a app não usa IA em tempo real.")
     st.info("Esta ferramenta ajuda a **encontrar** possíveis divergências. Não substitui a leitura nem a opinião de um jurista.", icon="⚠️")
 
 # Rodapé comum às páginas interiores (o átrio já tem o aviso completo)

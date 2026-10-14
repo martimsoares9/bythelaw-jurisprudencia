@@ -100,7 +100,7 @@ A lista do DGSI não mostra a secção; só se vê abrindo cada acórdão. Abrir
 - **"Mesma solução" por transitividade:** a viragem assume que acórdãos ligados em cadeia por "mesma solução" têm a mesma orientação; é uma aproximação.
 
 **4.5 Melhorias futuras**
-- **Pesquisa semântica na app.** A pesquisa atual é por palavras com uma lista de sinónimos escrita à mão (`app/sinonimos.json`, 23 grupos); não usa IA, porque a app em produção não chama a IA (custo, segurança e estabilidade). Uma pesquisa por sentido (embeddings) apanharia formulações que não estão na lista.
+- **Pesquisa semântica na app.** A pesquisa atual ordena os acórdãos por relevância das palavras (BM25 simplificado, aceita frases) com uma lista de sinónimos escrita à mão (`app/sinonimos.json`); as palavras escritas valem mais do que os sinónimos. Não usa IA, porque a app em produção não chama a IA (a chave gratuita dá 50 pedidos por dia no total, a app é pública e a IA em tempo real daria respostas sem a verificação de citações). Uma pesquisa por sentido (embeddings) apanharia formulações que não estão na lista; hoje, por exemplo, «o patrão pode despedir quem faltou?» devolve primeiro um despedimento coletivo e só depois os acórdãos sobre faltas.
 - Agrupar com *embeddings* multilingues (sentence-transformers) e HDBSCAN em vez de TF-IDF; requer acesso ao HuggingFace, bloqueado no ambiente de trabalho. Mudaria os temas, por isso obrigaria a refazer os nomes e as comparações.
 - Fichas para os 1820 acórdãos (hoje 400), mais pares comparados por semelhança e um modelo mais forte como juiz; requer crédito ou vários dias de quota gratuita.
 - Usar um modelo mais forte como juiz de pares e rever uma amostra maior com um jurista.
