@@ -16,10 +16,10 @@ dgsi.pt ──scraper.py──▶ base SQLite (data/acordaos.db)
    pipeline/viragens.py       ▼   divergência isolada ou viragem   ┘
    pipeline/exportar.py       ▼   app/dados.json (só leitura)
                               │
-                         app/app.py (Streamlit, sem IA nem DGSI) ──▶ https://divergencias-stj.streamlit.app/
+                         app/app.py (Streamlit; IA só na página opcional «Perguntar à IA») ──▶ https://divergencias-stj.streamlit.app/
 ```
 
-**Princípio de desenho:** a IA trabalha *antes*, em lote, e deixa resultados guardados; a app em produção só lê um ficheiro. Por isso é rápida, gratuita e dá sempre os mesmos resultados.
+**Princípio de desenho:** a IA trabalha *antes*, em lote, e deixa resultados guardados; a app lê um ficheiro, por isso é rápida, gratuita e dá sempre os mesmos resultados. Exceção opcional: a página «Perguntar à IA» chama a IA em tempo real, com chave nos segredos, limites diários, cache e citações verificadas; sem quota ou sem chave, o resto da app funciona na mesma.
 
 ## 2. Os passos, por ordem
 

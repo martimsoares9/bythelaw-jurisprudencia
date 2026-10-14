@@ -69,7 +69,7 @@ python pipeline/filtrar.py relatores  # relatores da 4.ª Secção
 mkdir -p data && python -c "import gzip,shutil;shutil.copyfileobj(gzip.open('dados/acordaos.db.gz'),open('data/acordaos.db','wb'))"
 ```
 
-## Correr a aplicação (sem IA, sem DGSI)
+## Correr a aplicação
 
 ```bash
 pip install -r app/requirements.txt
@@ -78,7 +78,9 @@ streamlit run app/app.py
 
 A app só lê `app/dados.json`. Para a publicar: Streamlit Community Cloud, ficheiro principal `app/app.py`.
 
-**O que tem a app** (um átrio de entrada e 3 páginas, sem barra lateral): **Início** (pesquisa, 3 atalhos e números), **Explorar assuntos** (31 assuntos, pesquisa por relevância com sinónimos, linha do tempo com arcos em que se vê que acórdãos cada arco liga: passa o rato por um losango ou escolhe um par para o realçar e ler os dois acórdãos com as citações e o link para o DGSI; fichas de cada acórdão), **Divergência encontrada** (os dois acórdãos lado a lado) e **Sobre o projeto** (método e limites). O glossário é um botão no topo e o aviso de IA está no Início e no rodapé. Não usa IA nem o DGSI em tempo real.
+**O que tem a app** (um átrio de entrada e 4 páginas, sem barra lateral): **Início** (pesquisa, 3 atalhos e números), **Explorar assuntos** (31 assuntos, pesquisa por relevância com sinónimos, linha do tempo com arcos em que se vê que acórdãos cada arco liga: passa o rato por um losango ou escolhe um par para o realçar e ler os dois acórdãos com as citações e o link para o DGSI; fichas de cada acórdão), **Divergência encontrada** (o caso candidato lado a lado, com ressalvas), **Perguntar à IA** (opcional, ver abaixo) e **Sobre o projeto** (método e limites). O glossário é um botão no topo e o aviso de IA está no Início e no rodapé. Não usa o DGSI em tempo real.
+
+**IA em tempo real (opcional e protegida).** A página «Perguntar à IA» só funciona se existir a chave `OPENROUTER_API_KEY` nos segredos da app (Streamlit Cloud: *Manage app → Settings → Secrets*, uma linha `OPENROUTER_API_KEY = "..."`); sem chave aparece desligada e o resto da app funciona. Lê os 5 acórdãos mais relevantes e responde só com base neles; cada citação tem de existir literalmente no sumário, senão não mostra resposta. Limites: 5 perguntas por visita e 40 por dia no total (a chave gratuita dá 50), com cache; se a quota acabar, mostra os acórdãos mais relevantes.
 
 ## Repetir o pipeline com IA (opcional)
 

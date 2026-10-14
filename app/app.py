@@ -154,7 +154,7 @@ except Exception:  # versão do Streamlit sem este método: a app funciona na me
 
 REPO = "https://github.com/martimsoares9/bythelaw-jurisprudencia"
 REVISAO = {"certos": 18, "com_opiniao": 23, "total": 25}  # revisão manual de 25 veredictos (revisao/respostas.csv)
-HALL, EXPLORAR, DIVERGENCIA, SOBRE = "hall", "explorar", "divergencia", "sobre"
+HALL, EXPLORAR, DIVERGENCIA, PERGUNTAR, SOBRE = "hall", "explorar", "divergencia", "perguntar", "sobre"
 MANTER = object()  # "não mudar o assunto escolhido"
 
 # ---------- números globais (calculados dos dados, sem escrever à mão) ----------
@@ -167,6 +167,93 @@ n_pares = len(pares)
 n_opostas = sum(c["resultado"] == "solucao_oposta" and not FP(c) for c in pares.values())
 n_falsos = sum(c["resultado"] == "solucao_oposta" and FP(c) for c in pares.values())
 acordao_por_id = {a["doc_id"]: a for t in dados["temas"] for a in t["acordaos"]}
+
+
+# ====================================================================== IA EM TEMPO REAL (opcional e protegida)
+# A chave vem dos segredos do Streamlit (OPENROUTER_API_KEY). Sem chave, a página fica desligada.
+# Salvaguardas: limite global diário, limite por visita, cache de perguntas repetidas, e cada citação tem de existir
+# literalmente no sumário do acórdão (se nenhuma se verificar, não se mostra resposta).
+LIMITE_DIA, LIMITE_SESSAO = 40, 5
+MODELO_APP = "nvidia/nemotron-3-super-120b-a12b:free"
+SISTEMA_IA = """Respondes a perguntas sobre jurisprudência do STJ (direito do trabalho) usando APENAS os sumários de acórdãos fornecidos. \
+Escreve em português europeu, em linguagem simples, em no máximo 120 palavras, e refere o número do acórdão entre parênteses retos, por exemplo [2]. \
+Não uses conhecimento externo nem inventes. Se os sumários não permitirem responder, diz: "Não encontrei base nos acórdãos consultados." \
+Se dois acórdãos derem respostas diferentes à mesma questão, diz que há divergência e quais são. \
+Devolve SÓ um objeto JSON: {"resposta": "...", "citacoes": [{"n": 1, "texto": "citação LITERAL curta (máx. 250 caracteres) copiada do SUMÁRIO do acórdão n"}]}. \
+Inclui 1 a 3 citações, copiadas caracter a caracter."""
+
+
+def chave_ia():
+    try:
+        return st.secrets.get("OPENROUTER_API_KEY")
+    except Exception:  # sem ficheiro de segredos
+        return None
+
+
+@st.cache_resource
+def contador_dia():
+    return {"dia": None, "n": 0}
+
+
+def reservar_pedido():
+    import datetime
+    c = contador_dia()
+    hoje = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
+    if c["dia"] != hoje:
+        c["dia"], c["n"] = hoje, 0
+    if c["n"] >= LIMITE_DIA:
+        return False
+    c["n"] += 1
+    return True
+
+
+def _ws(t):
+    import re
+    return re.sub(r"\s+", " ", t or "").strip()
+
+
+@st.cache_data(ttl=24 * 3600, show_spinner=False)
+def responder_ia(pergunta):
+    """Responde com base nos 5 acórdãos mais relevantes. Levanta RuntimeError('limite_dia' | 'quota' | 'erro') se falhar
+    (as falhas não ficam em cache)."""
+    import json as _json
+    import requests
+    achados, _ = pesquisar(pergunta, limite=5)
+    if not achados:
+        return {"sem_base": True}
+    if not reservar_pedido():
+        raise RuntimeError("limite_dia")
+    docs = [d["a"] for _, d in achados]
+    contexto = "\n\n".join(f'[{i + 1}] {a["data"]} · proc. {a["processo"]}\nSUMÁRIO: {_ws(a["sumario"])[:1800]}' for i, a in enumerate(docs))
+    try:
+        r = requests.post("https://openrouter.ai/api/v1/chat/completions", timeout=60,
+                          headers={"Authorization": f"Bearer {chave_ia()}"},
+                          json={"model": MODELO_APP, "max_tokens": 900, "temperature": 0, "reasoning": {"enabled": False},
+                                "messages": [{"role": "system", "content": SISTEMA_IA},
+                                             {"role": "user", "content": f"Pergunta: {pergunta}\n\nAcórdãos:\n{contexto}"}]})
+    except Exception:
+        raise RuntimeError("erro")
+    if r.status_code in (402, 429):
+        raise RuntimeError("quota")
+    if not r.ok:
+        raise RuntimeError("erro")
+    try:
+        txt = (r.json()["choices"][0]["message"]["content"] or "").strip()
+        txt = txt.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        out = _json.loads(txt[txt.find("{"): txt.rfind("}") + 1])
+    except Exception:
+        raise RuntimeError("erro")
+    validas = []
+    for c in out.get("citacoes", []):
+        try:
+            n = int(c["n"])
+            t = _ws(c["texto"])
+            if 1 <= n <= len(docs) and t and t in _ws(docs[n - 1]["sumario"]):
+                validas.append({"n": n, "texto": t})
+        except Exception:
+            continue
+    return {"resposta": str(out.get("resposta", "")).strip(), "citacoes": validas, "consultados": [
+        {"n": i + 1, "data": a["data"], "processo": a["processo"], "url": a["url"], "questao": a["questao"]} for i, a in enumerate(docs)]}
 
 
 def ir(pagina, assunto=MANTER, pesquisa=None):
@@ -320,14 +407,15 @@ topo()
 # ====================================================================== ÁTRIO
 if pagina == HALL:
     st.title("⚖️ Onde e quando o tribunal mudou de opinião")
-    st.markdown("Junta as decisões do Supremo Tribunal de Justiça que tratam do **mesmo problema** e mostra se o tribunal "
-                "respondeu sempre da mesma forma ou se mudou de opinião. Direito do trabalho, 2010–2026.")
+    st.markdown("Junta as decisões do Supremo Tribunal de Justiça que tratam do **mesmo problema** e mostra **onde se contradizem** "
+                "e se o tribunal mudou de orientação ao longo do tempo. Direito do trabalho, 2010–2026.")
     st.text_input("🔎 Procura um tema", key="busca_hall", on_change=pesquisa_do_hall,
                   placeholder="uma palavra ou uma pergunta: despedir, férias, acidente a caminho do trabalho  (Enter)")
     st.markdown("##### Ou escolhe o que queres fazer")
     for emoji, titulo, texto, pag, chave in (
             ("🗂️", "Explorar por assunto", "Escolhe um assunto e vê os acórdãos numa linha do tempo.", EXPLORAR, "c_expl"),
-            ("⚖️", "A divergência encontrada", "Duas decisões opostas, lado a lado, com as citações.", DIVERGENCIA, "c_div"),
+            ("⚖️", "A divergência encontrada", "O caso candidato, lado a lado, com as citações e as ressalvas.", DIVERGENCIA, "c_div"),
+            ("🤖", "Perguntar à IA", "Faz uma pergunta; a IA responde só com base nos acórdãos, com citações verificadas.", PERGUNTAR, "c_ia"),
             ("ℹ️", "Como funciona", "Como foi feito, o que vale e quais são os limites.", SOBRE, "c_sobre")):
         with st.container(border=True):
             col_t, col_b = st.columns([4, 1], vertical_alignment="center")
@@ -337,7 +425,7 @@ if pagina == HALL:
     m[0].metric("Acórdãos", dados["fichas"], help=f'Amostra de {dados["fichas"]} acórdãos ({dados["fichas_merito"]} de mérito) de {dados["total_trabalho"]} recolhidos.')
     m[1].metric("Assuntos", len(temas))
     m[2].metric("Pares comparados", n_pares)
-    m[3].metric("Divergências", n_opostas)
+    m[3].metric("Divergências candidatas", n_opostas, help="Pares de acórdãos que a IA classificou como soluções opostas e que a revisão não afastou. Nenhuma viragem está confirmada.")
     st.warning("**Classificação automática por IA, pode conter erros.** As citações são verificadas por programa "
                "(têm de existir no sumário do acórdão), mas a interpretação não foi validada por um jurista.", icon="⚠️")
 
@@ -450,9 +538,12 @@ elif pagina == EXPLORAR:
 # ====================================================================== DIVERGÊNCIA
 elif pagina == DIVERGENCIA:
     st.title("⚖️ A divergência encontrada")
-    st.markdown(f"Em {n_pares} pares de acórdãos comparados pela IA, **encontrou-se {n_opostas} divergência** e {n_falsos} caso que a revisão marcou como "
-                "falso positivo. Uma divergência é um par de decisões do mesmo tribunal que respondem de forma oposta à mesma pergunta; "
-                "é o tipo de caso que, mais tarde, o STJ resolve com um Acórdão de Uniformização de Jurisprudência (AUJ).")
+    st.markdown(f"Em {n_pares} pares de acórdãos comparados pela IA, o sistema encontrou **{n_opostas} divergência candidata**"
+                + (f" e afastou {n_falsos} falso positivo na revisão" if n_falsos else "") + ". "
+                "Uma divergência é um par de decisões do mesmo tribunal que respondem de forma oposta à mesma pergunta.")
+    st.info("**O que isto prova, e o que não prova.** Prova que o método encontra pares comparáveis e os mostra com citações verificadas, "
+            "e que o caso abaixo toca numa questão que o STJ mais tarde uniformizou. **Não prova** que o tribunal mudou de orientação (viragem): "
+            "a amostra é pequena e o próprio sistema assinala incoerências neste caso.", icon="🧭")
     ja = set()
     for t in dados["temas"]:
         ac_t = {a["doc_id"]: a for a in t["acordaos"]}
@@ -472,6 +563,53 @@ elif pagina == DIVERGENCIA:
                     "- Com mais fichas e mais pares é provável que apareçam mais casos.")
     st.button("Explorar o assunto desta divergência →", on_click=ir, args=(EXPLORAR, 100), key="b_ex100")
 
+# ====================================================================== PERGUNTAR À IA
+elif pagina == PERGUNTAR:
+    st.title("🤖 Perguntar à IA")
+    st.markdown("Escreve uma pergunta sobre direito do trabalho. A IA lê os **5 acórdãos mais relevantes** e responde **só com base neles**, "
+                "com citações que o programa verifica no sumário de cada acórdão. Se não conseguir citar, não responde.")
+    if not chave_ia():
+        st.info("Esta funcionalidade está **desligada** (falta a chave de IA nos segredos da app). A pesquisa por relevância continua a funcionar em «Explorar por assunto».", icon="🔌")
+    else:
+        pergunta = st.text_area("A tua pergunta", key="pergunta_ia", height=90,
+                                placeholder="por exemplo: Quando é que faltar ao trabalho justifica um despedimento?")
+        usadas = st.session_state.get("ia_usadas", 0)
+        if st.button("Perguntar", key="b_perguntar", disabled=not pergunta.strip()):
+            if usadas >= LIMITE_SESSAO:
+                st.warning(f"Já fizeste {LIMITE_SESSAO} perguntas nesta visita. Podes continuar a usar a pesquisa por relevância.", icon="⏳")
+            else:
+                st.session_state["ia_usadas"] = usadas + 1
+                try:
+                    with st.spinner("A ler os acórdãos…"):
+                        res = responder_ia(" ".join(pergunta.split()))
+                    if res.get("sem_base"):
+                        st.warning("Não encontrei acórdãos relevantes para esta pergunta. Tenta outras palavras.", icon="🔎")
+                    elif not res["citacoes"] or not res["resposta"]:
+                        st.warning("A IA não conseguiu fundamentar uma resposta com **citações verificadas**, por isso não a mostro. "
+                                   "Estes são os acórdãos mais relevantes:", icon="🛡️")
+                    else:
+                        st.markdown("##### Resposta")
+                        st.write(res["resposta"])
+                        st.markdown("##### Citações verificadas")
+                        for c in res["citacoes"]:
+                            x = res["consultados"][c["n"] - 1]
+                            st.markdown(f'**[{c["n"]}]** {x["data"]} · proc. {x["processo"]}  \n> {c["texto"]}  \n[Acórdão original no DGSI]({x["url"]})')
+                    if not res.get("sem_base"):
+                        with st.expander("Acórdãos consultados"):
+                            for x in res["consultados"]:
+                                st.markdown(f'**[{x["n"]}]** {x["data"]} · {x["questao"]}  \n[Acórdão original no DGSI]({x["url"]})')
+                    st.caption("Resposta gerada por IA a partir destes acórdãos; pode conter erros e não substitui um jurista.")
+                except RuntimeError as e:
+                    motivo = str(e)
+                    st.warning("A quota diária gratuita da IA já foi usada (repõe às 00:00 UTC). " if motivo in ("quota", "limite_dia")
+                               else "A IA não respondeu agora. ", icon="⏳")
+                    achados, _ = pesquisar(pergunta, limite=5)
+                    st.markdown("**Entretanto, estes são os acórdãos mais relevantes para a tua pergunta:**")
+                    for _, d in achados:
+                        a = d["a"]
+                        st.markdown(f'- {a["data"]} · {a["questao"]}  \n  [Acórdão original no DGSI]({a["url"]})')
+        st.caption(f"Limites: {LIMITE_SESSAO} perguntas por visita e {LIMITE_DIA} por dia no total. Perguntas repetidas não gastam quota.")
+
 # ====================================================================== SOBRE
 else:
     st.title("ℹ️ Como funciona")
@@ -490,7 +628,8 @@ else:
     st.markdown("- Só uma parte dos acórdãos tem ficha; um só tribunal e uma só área.\n"
                 "- Dois modelos de IA (um gratuito, mais fraco); revisão feita por uma só pessoa sem formação jurídica.\n"
                 "- Já houve um falso positivo (assinalado na página da divergência).\n"
-                "- A pesquisa é por relevância das palavras (e sinónimos), e não por sentido; a app não usa IA em tempo real.")
+                "- A pesquisa é por relevância das palavras (e sinónimos), e não por sentido.\n"
+                "- A página «Perguntar à IA» usa IA em tempo real, com limites diários e citações verificadas; sem quota, a app continua a funcionar sem ela.")
     st.info("Esta ferramenta ajuda a **encontrar** possíveis divergências. Não substitui a leitura nem a opinião de um jurista.", icon="⚠️")
 
 # Rodapé comum às páginas interiores (o átrio já tem o aviso completo)
