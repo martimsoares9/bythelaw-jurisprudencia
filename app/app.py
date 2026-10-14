@@ -215,27 +215,45 @@ def legenda():
         st.markdown(f'<span style="color:{COR[k]}">●</span> **{NOME[k]}**: {EXPLICA[k]}', unsafe_allow_html=True)
 
 
-def linha_do_tempo(tema, ac, comps):
+def linha_do_tempo(tema, ac, comps, escolhido=None):
+    """Pontos = acórdãos; arcos = pares comparados. Cada arco tem um losango a meio: passa o rato por cima para ver
+    que dois acórdãos liga. `escolhido` (posição em `comps`) realça um par e esmaece os outros."""
     import math
+    import textwrap
     from datetime import date, timedelta
+    quebra = lambda t, n=58: "<br>".join(textwrap.wrap(t or "", n))
     xs = [a["data"] for a in tema["acordaos"]]
     fig = go.Figure()
+    meios = []
     for k in NOME:  # primeiro os cinzentos, por baixo; os laranjas ficam por cima
-        for c in comps:
+        for pos, c in enumerate(comps):
             if c["resultado"] != k:
                 continue
-            d0, d1 = date.fromisoformat(ac[c["a_doc"]]["data"]), date.fromisoformat(ac[c["b_doc"]]["data"])
+            a, b = ac[c["a_doc"]], ac[c["b_doc"]]
+            d0, d1 = date.fromisoformat(a["data"]), date.fromisoformat(b["data"])
             n = max((d1 - d0).days, 1)
             h = 0.15 + min(n / 3650, 1) * 0.8  # arcos mais altos para pares mais afastados no tempo
             ts = [i / 20 for i in range(21)]
             falso = FP(c)  # falso positivo da revisão: tracejado fino, não conta como divergência
+            esco = pos == escolhido
             fig.add_trace(go.Scatter(x=[(d0 + timedelta(days=n * t)).isoformat() for t in ts],
                                      y=[h * math.sin(math.pi * t) for t in ts], mode="lines", showlegend=False, hoverinfo="skip",
-                                     line=dict(color=COR[k], width=1.5 if falso else 4 if k == "solucao_oposta" else 1.5,
+                                     opacity=0.25 if escolhido is not None and not esco else 1,
+                                     line=dict(color=COR[k], width=6 if esco else 1.5 if falso else 4 if k == "solucao_oposta" else 1.5,
                                                dash="dash" if falso else "solid" if k != "nao_comparavel" else "dot")))
+            meios.append((pos, c, a, b, d0 + timedelta(days=n // 2), h, k, falso, esco))
+    # losangos a meio de cada arco: é aqui que se vê que dois acórdãos o arco liga
+    fig.add_trace(go.Scatter(
+        x=[m[4].isoformat() for m in meios], y=[m[5] for m in meios], mode="markers", showlegend=False,
+        marker=dict(symbol="diamond", size=[13 if m[8] else 8 for m in meios], color=[COR[m[6]] for m in meios],
+                    line=dict(width=1, color="white")),
+        hovertemplate="%{text}<extra></extra>",
+        text=[f'<b>{NOME[m[6]]}{" (falso positivo na revisão)" if m[7] else ""}</b><br>'
+              f'{m[2]["data"]} · proc. {m[2]["processo"]}<br>↔ {m[3]["data"]} · proc. {m[3]["processo"]}<br>'
+              f'<i>{quebra(m[1]["justificacao"][:170])}…</i>' for m in meios]))
     fig.add_trace(go.Scatter(x=xs, y=[0] * len(xs), mode="markers", name="Acórdão",
                              marker=dict(size=10, color="#333333", line=dict(width=1, color="white")),
-                             text=[f'{a["data"]} · {a["processo"]}<br>{a["questao"][:140]}…' for a in tema["acordaos"]],
+                             text=[f'<b>{a["data"]}</b> · proc. {a["processo"]}<br>{quebra(a["questao"][:150])}…' for a in tema["acordaos"]],
                              hovertemplate="%{text}<extra></extra>"))
     for k in NOME:  # legenda manual
         fig.add_trace(go.Scatter(x=[None], y=[None], mode="lines", name=NOME[k], line=dict(color=COR[k], width=3)))
@@ -244,9 +262,29 @@ def linha_do_tempo(tema, ac, comps):
     if tema.get("data_auj"):
         fig.add_vline(x=tema["data_auj"], line_dash="dash", line_color="#444444",
                       annotation_text="AUJ n.º 6/2024", annotation_position="top")
-    fig.update_layout(height=360, margin=dict(l=10, r=10, t=30, b=10), yaxis=dict(visible=False, range=[-0.15, 1.1]),
-                      xaxis_title="Data do acórdão", legend=dict(orientation="h", y=-0.25))
-    st.plotly_chart(fig, width="stretch")
+    if escolhido is not None:  # marca os dois acórdãos do par escolhido
+        c = comps[escolhido]
+        for letra, doc in (("A", c["a_doc"]), ("B", c["b_doc"])):
+            fig.add_annotation(x=ac[doc]["data"], y=0, text=f"<b>{letra}</b>", showarrow=False, yshift=-18,
+                               font=dict(size=14, color=COR[c["resultado"]]))
+    fig.update_layout(height=380, margin=dict(l=10, r=10, t=30, b=10), yaxis=dict(visible=False, range=[-0.2, 1.1]),
+                      xaxis_title="Data do acórdão", legend=dict(orientation="h", y=-0.25), hoverlabel=dict(align="left"))
+    return fig
+
+
+def cartao_par(c, a, b):
+    """Os dois acórdãos de um par comparado, com o veredicto, a justificação e as citações."""
+    st.markdown(f'<span style="color:{COR[c["resultado"]]}">●</span> **{NOME[c["resultado"]]}**'
+                + (" · revisão: provável falso positivo" if FP(c) else ""), unsafe_allow_html=True)
+    st.write(c["justificacao"])
+    for x, cit, lado in ((a, c["citacao_a"], "A · mais antigo"), (b, c["citacao_b"], "B · mais recente")):
+        with st.container(border=True):
+            st.markdown(f'**{lado}** · {x["data"]} · proc. {x["processo"]}')
+            st.markdown(f'*Questão:* {x["questao"]}')
+            st.markdown(f'*Solução:* {x["solucao"]}')
+            if cit:
+                st.markdown(f'> {cit}')
+            st.markdown(f'[Ver o acórdão original no DGSI]({x["url"]})')
 
 
 def mostrar_divergencia(c, a, b, vir=None):
@@ -328,8 +366,14 @@ elif pagina == EXPLORAR:
         aba1, aba2, aba3 = st.tabs(["Linha do tempo", "Divergências", "Acórdãos"])
         with aba1:
             if comps:
-                linha_do_tempo(tema, ac, comps)
-                st.caption("Passa o rato por cima de um ponto para ver a pergunta desse acórdão.")
+                rotulos = [f'{ac[c["a_doc"]]["data"]} ↔ {ac[c["b_doc"]]["data"]} · {NOME[c["resultado"]]}' + (" (falso positivo)" if FP(c) else "")
+                           for c in comps]
+                sel = st.selectbox("Ver um par comparado (realça o arco e mostra os dois acórdãos)", ["— nenhum —"] + rotulos, key=f"par_{tid}")
+                pos = rotulos.index(sel) if sel in rotulos else None
+                st.plotly_chart(linha_do_tempo(tema, ac, comps, pos), width="stretch")
+                st.caption("Passa o rato por cima de um ponto (um acórdão) ou de um losango (o par que o arco liga).")
+                if pos is not None:
+                    cartao_par(comps[pos], ac[comps[pos]["a_doc"]], ac[comps[pos]["b_doc"]])
                 with st.expander("O que significam as cores?"):
                     legenda()
             else:
@@ -352,13 +396,6 @@ elif pagina == EXPLORAR:
                     st.markdown(f'🟠 **{a["data"]} ↔ {b["data"]}** · {etiqueta}')
                     st.write(c["justificacao"])
                     st.button("Ver os dois acórdãos lado a lado →", on_click=ir, args=(DIVERGENCIA,), key=f"vd{tid}_{i}")
-            outros = [c for c in comps if c["resultado"] != "solucao_oposta"]
-            if outros:
-                with st.expander(f"Outros pares comparados ({len(outros)})"):
-                    for c in outros:
-                        a, b = ac[c["a_doc"]], ac[c["b_doc"]]
-                        st.markdown(f'**{NOME[c["resultado"]]}** · {a["data"]} → {b["data"]}')
-                        st.caption(c["justificacao"])
         with aba3:
             for a in tema["acordaos"]:
                 with st.expander(f'{a["data"]} · {a["questao"][:100]}'):
