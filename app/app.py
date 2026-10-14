@@ -412,11 +412,11 @@ if pagina == HALL:
     st.text_input("🔎 Procura um tema", key="busca_hall", on_change=pesquisa_do_hall,
                   placeholder="uma palavra ou uma pergunta: despedir, férias, acidente a caminho do trabalho  (Enter)")
     st.markdown("##### Ou escolhe o que queres fazer")
-    for emoji, titulo, texto, pag, chave in (
+    for emoji, titulo, texto, pag, chave in tuple(c for c in (
             ("🗂️", "Explorar por assunto", "Escolhe um assunto e vê os acórdãos numa linha do tempo.", EXPLORAR, "c_expl"),
             ("⚖️", "A divergência encontrada", "O caso candidato, lado a lado, com as citações e as ressalvas.", DIVERGENCIA, "c_div"),
             ("🤖", "Perguntar à IA", "Faz uma pergunta; a IA responde só com base nos acórdãos, com citações verificadas.", PERGUNTAR, "c_ia"),
-            ("ℹ️", "Como funciona", "Como foi feito, o que vale e quais são os limites.", SOBRE, "c_sobre")):
+            ("ℹ️", "Como funciona", "Como foi feito, o que vale e quais são os limites.", SOBRE, "c_sobre")) if c[3] != PERGUNTAR or chave_ia()):  # o cartão da IA só aparece se houver chave
         with st.container(border=True):
             col_t, col_b = st.columns([4, 1], vertical_alignment="center")
             col_t.markdown(f"**{emoji} {titulo}**  \n{texto}")
