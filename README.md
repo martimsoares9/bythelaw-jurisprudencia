@@ -11,7 +11,7 @@ Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões diver
 | 1 | Link da aplicação em produção | [https://divergencias-stj.streamlit.app/](https://divergencias-stj.streamlit.app/) | Feito (Streamlit Community Cloud; se estiver a dormir, clicar em "Yes, get this app back up!") |
 | 2 | Repositório com README que explique como correr | Este ficheiro, secção "Como correr" | Feito |
 | 3 | Nota curta de decisões | [`NOTA_DECISOES.md`](NOTA_DECISOES.md) | Subset, temas, divergências, revisão manual (acerto 78%) e limitações escritos |
-| 4 | Descrição do uso de IA | [`AI_USAGE.md`](AI_USAGE.md) | Em curso |
+| 4 | Descrição do uso de IA | [`AI_USAGE.md`](AI_USAGE.md) | Feito |
 | 5 | Vídeo de demonstração com narração | https://youtu.be/F6Q0lVp-Irc | Feito |
 
 ## Mapa de ficheiros (o que cada um contém)
