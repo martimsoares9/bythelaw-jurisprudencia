@@ -153,7 +153,7 @@ except Exception:  # versão do Streamlit sem este método: a app funciona na me
     pass
 
 REPO = "https://github.com/martimsoares9/bythelaw-jurisprudencia"
-REVISAO = {"certos": 18, "com_opiniao": 23, "total": 25}  # revisão manual de 25 veredictos (revisao/respostas.csv)
+REVISAO = {"certos": 18, "com_opiniao": 23, "total": 25}  # revisão manual de 25 veredictos da IA (18 certos em 23 com opinião)
 HALL, EXPLORAR, DIVERGENCIA, PERGUNTAR, SOBRE = "hall", "explorar", "divergencia", "perguntar", "sobre"
 MANTER = object()  # "não mudar o assunto escolhido"
 
@@ -620,7 +620,7 @@ elif pagina == PERGUNTAR:
 else:
     st.title("ℹ️ Como funciona")
     st.markdown("Protótipo feito para o desafio da ByTheLaw: agregar acórdãos **por tema** e identificar **decisões divergentes ao longo do tempo**. "
-                f"O código, a nota de decisões e a descrição do uso de IA estão no [repositório]({REPO}).")
+                f"O código está no [repositório]({REPO}).")
     st.subheader("Como foi feito")
     st.markdown(
         "1. **Recolha responsável do DGSI** (pausas, cache, identificação).\n"

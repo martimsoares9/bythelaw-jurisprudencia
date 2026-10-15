@@ -2,25 +2,13 @@
 
 Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões divergentes ao longo do tempo** (onde e quando o tribunal mudou de entendimento). Desafio ByTheLaw; fonte: [dgsi.pt](https://www.dgsi.pt). Subset: STJ, 4.ª Secção, 2010–2026.
 
-> **Estado (2026-10-15):** tudo entregue: recolha (1820 acórdãos de trabalho), fichas por IA (400, 22%), temas (30), comparação de pares, validação, app e vídeo. Limites principais na [`NOTA_DECISOES.md`](NOTA_DECISOES.md).
-
-## Entregáveis do enunciado e onde estão
-
-| # | O enunciado pede | Onde está | Estado |
-|---|---|---|---|
-| 1 | Link da aplicação em produção | [https://divergencias-stj.streamlit.app/](https://divergencias-stj.streamlit.app/) | Feito (Streamlit Community Cloud; se estiver a dormir, clicar em "Yes, get this app back up!") |
-| 2 | Repositório com README que explique como correr | Este ficheiro, secção "Como correr" | Feito |
-| 3 | Nota curta de decisões | [`NOTA_DECISOES.md`](NOTA_DECISOES.md) | Subset, temas, divergências, revisão manual (acerto 78%) e limitações escritos |
-| 4 | Descrição do uso de IA | [`AI_USAGE.md`](AI_USAGE.md) | Feito |
-| 5 | Vídeo de demonstração com narração | https://youtu.be/F6Q0lVp-Irc | Feito |
+**Aplicação online:** https://divergencias-stj.streamlit.app/ (se estiver a dormir, clicar em "Yes, get this app back up!").
 
 ## Mapa de ficheiros (o que cada um contém)
 
 | Ficheiro | O que contém |
 |---|---|
-| `README.md` | Este mapa, os entregáveis e como correr o projeto |
-| `NOTA_DECISOES.md` | **Porquê** de cada decisão: subset, recolha responsável, método de temas e de divergências, limitações |
-| `AI_USAGE.md` | Como se usou a IA: ferramentas, fluxo, diário, o que funcionou e o que falhou, validação |
+| `README.md` | Este mapa e como correr o projeto |
 | `scraper.py` | Programa que lê o DGSI e guarda numa base SQLite (`indexar`, `detalhes`, `stats`) |
 | `filtro_laboral.txt` | Palavras-chave laborais usadas para escolher que acórdãos abrir (lido pelo scraper) |
 | `relatores_4secao.txt` | Relatores que julgam quase só na 4.ª Secção, usados na 2.ª etapa da recolha |
@@ -36,7 +24,7 @@ Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões diver
 | `requirements.txt`, `app/requirements.txt` | Dependências do pipeline e da app |
 | `dados/acordaos.db.gz` | Cópia comprimida da base de dados recolhida (antes das fichas da IA) |
 | `dados/ia_tabelas.json.gz` | Fichas da IA, temas e comparações (pequeno) |
-| `revisao/` | Revisão manual de 25 veredictos da IA (`CASOS.md`, `respostas.csv`) e pares revistos à mão (`pares_revistos.csv`) |
+| `revisao/pares_revistos.csv` | Pares revistos à mão (falsos positivos), lido por `pipeline/exportar.py` |
 | `data/`, `cache/` | Base de dados e páginas descarregadas; locais, **não** vão para o git |
 
 ## Passos do trabalho, por ordem
@@ -50,7 +38,7 @@ Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões diver
 | 5 | Ficha por acórdão (400 até agora, com citação verificada) | `pipeline/extrair.py` | **sim** |
 | 6 | Agrupar por tema (30 temas) e atribuir fichas novas | `pipeline/agrupar.py`, `atribuir_temas.py` | não |
 | 7 | Comparar pares do mesmo tema (mesma solução / oposta / não comparável) | `pipeline/comparar.py` | **sim** |
-| 8 | Validar com o AUJ n.º 6/2024 e rever 25 veredictos à mão | `pipeline/validar_auj.py`, `revisao/` | **sim** + revisão humana |
+| 8 | Validar com o AUJ n.º 6/2024 | `pipeline/validar_auj.py` | **sim** |
 | 9 | Divergência isolada, coexistente, inconsistente ou viragem | `pipeline/viragens.py` | não |
 | 10 | Exportar para a app e publicar | `pipeline/exportar.py`, `app/app.py` | não |
 
