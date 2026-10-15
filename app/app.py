@@ -177,10 +177,12 @@ LIMITE_DIA, LIMITE_SESSAO = 40, 5
 MODELO_APP = "nvidia/nemotron-3-super-120b-a12b:free"
 SISTEMA_IA = """Respondes a perguntas sobre jurisprudência do STJ (direito do trabalho) usando APENAS os sumários de acórdãos fornecidos. \
 Escreve em português europeu, em linguagem simples, em no máximo 120 palavras, e refere o número do acórdão entre parênteses retos, por exemplo [2]. \
-Não uses conhecimento externo nem inventes. Se os sumários não permitirem responder, diz: "Não encontrei base nos acórdãos consultados." \
+Não uses conhecimento externo nem inventes. \
+ANTES de responder, verifica se algum sumário trata da MESMA situação concreta da pergunta (não basta falar do mesmo tema geral: por exemplo, uma definição geral de justa causa não responde a uma pergunta sobre faltas). \
+Se nenhum tratar dessa situação, devolve {"base": false, "resposta": "", "citacoes": []}. \
 Se dois acórdãos derem respostas diferentes à mesma questão, diz que há divergência e quais são. \
-Devolve SÓ um objeto JSON: {"resposta": "...", "citacoes": [{"n": 1, "texto": "citação LITERAL curta (máx. 250 caracteres) copiada do SUMÁRIO do acórdão n"}]}. \
-Inclui 1 a 3 citações, copiadas caracter a caracter."""
+Caso contrário devolve SÓ um objeto JSON: {"base": true, "resposta": "...", "citacoes": [{"n": 1, "texto": "citação LITERAL curta (máx. 250 caracteres) copiada do SUMÁRIO do acórdão n"}]}. \
+Inclui 1 a 3 citações, copiadas caracter a caracter, que sustentem diretamente a resposta."""
 
 
 def chave_ia():
@@ -243,6 +245,9 @@ def responder_ia(pergunta):
         out = _json.loads(txt[txt.find("{"): txt.rfind("}") + 1])
     except Exception:
         raise RuntimeError("erro")
+    if out.get("base") is False:
+        return {"sem_base": True, "consultados": [
+            {"n": i + 1, "data": a["data"], "processo": a["processo"], "url": a["url"], "questao": a["questao"]} for i, a in enumerate(docs)]}
     validas = []
     for c in out.get("citacoes", []):
         try:
@@ -583,7 +588,8 @@ elif pagina == PERGUNTAR:
                     with st.spinner("A ler os acórdãos…"):
                         res = responder_ia(" ".join(pergunta.split()))
                     if res.get("sem_base"):
-                        st.warning("Não encontrei acórdãos relevantes para esta pergunta. Tenta outras palavras.", icon="🔎")
+                        st.warning("Não encontrei, nos acórdãos que esta app tem, nenhum que trate desta situação concreta, por isso não respondo. "
+                                   "A app só tem uma parte dos acórdãos da 4.ª Secção. Tenta outras palavras.", icon="🔎")
                     elif not res["citacoes"] or not res["resposta"]:
                         st.warning("A IA não conseguiu fundamentar uma resposta com **citações verificadas**, por isso não a mostro. "
                                    "Estes são os acórdãos mais relevantes:", icon="🛡️")
@@ -594,7 +600,7 @@ elif pagina == PERGUNTAR:
                         for c in res["citacoes"]:
                             x = res["consultados"][c["n"] - 1]
                             st.markdown(f'**[{c["n"]}]** {x["data"]} · proc. {x["processo"]}  \n> {c["texto"]}  \n[Acórdão original no DGSI]({x["url"]})')
-                    if not res.get("sem_base"):
+                    if res.get("consultados"):
                         with st.expander("Acórdãos consultados"):
                             for x in res["consultados"]:
                                 st.markdown(f'**[{x["n"]}]** {x["data"]} · {x["questao"]}  \n[Acórdão original no DGSI]({x["url"]})')
