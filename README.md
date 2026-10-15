@@ -12,7 +12,7 @@ Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões diver
 | 2 | Repositório com README que explique como correr | Este ficheiro, secção "Como correr" | Feito |
 | 3 | Nota curta de decisões | [`NOTA_DECISOES.md`](NOTA_DECISOES.md) | Subset, temas, divergências, revisão manual (acerto 78%) e limitações escritos |
 | 4 | Descrição do uso de IA | [`AI_USAGE.md`](AI_USAGE.md) | Em curso |
-| 5 | Vídeo de demonstração com narração | *(link a acrescentar aqui)* | Por fazer |
+| 5 | Vídeo de demonstração com narração | https://youtu.be/F6Q0lVp-Irc | Feito |
 
 ## Mapa de ficheiros (o que cada um contém)
 
