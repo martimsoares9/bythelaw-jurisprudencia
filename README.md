@@ -2,7 +2,7 @@
 
 Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões divergentes ao longo do tempo** (onde e quando o tribunal mudou de entendimento). Desafio ByTheLaw; fonte: [dgsi.pt](https://www.dgsi.pt). Subset: STJ, 4.ª Secção, 2010–2026.
 
-> **Estado (2026-10-13):** recolha (1820 acórdãos de trabalho), fichas por IA (400), temas (30), comparação de pares e app feitos. Falta o vídeo.
+> **Estado (2026-10-15):** tudo entregue: recolha (1820 acórdãos de trabalho), fichas por IA (400, 22%), temas (30), comparação de pares, validação, app e vídeo. Limites principais na [`NOTA_DECISOES.md`](NOTA_DECISOES.md).
 
 ## Entregáveis do enunciado e onde estão
 
@@ -20,7 +20,6 @@ Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões diver
 |---|---|
 | `README.md` | Este mapa, os entregáveis e como correr o projeto |
 | `NOTA_DECISOES.md` | **Porquê** de cada decisão: subset, recolha responsável, método de temas e de divergências, limitações |
-| `PROCESSO.md` | **Todos os passos do trabalho, por ordem, e a orquestração das peças** (o único ficheiro extra) |
 | `AI_USAGE.md` | Como se usou a IA: ferramentas, fluxo, diário, o que funcionou e o que falhou, validação |
 | `scraper.py` | Programa que lê o DGSI e guarda numa base SQLite (`indexar`, `detalhes`, `stats`) |
 | `filtro_laboral.txt` | Palavras-chave laborais usadas para escolher que acórdãos abrir (lido pelo scraper) |
@@ -37,7 +36,25 @@ Protótipo que agrega acórdãos do STJ **por tema** e procura **decisões diver
 | `requirements.txt`, `app/requirements.txt` | Dependências do pipeline e da app |
 | `dados/acordaos.db.gz` | Cópia comprimida da base de dados recolhida (antes das fichas da IA) |
 | `dados/ia_tabelas.json.gz` | Fichas da IA, temas e comparações (pequeno) |
+| `revisao/` | Revisão manual de 25 veredictos da IA (`CASOS.md`, `respostas.csv`) e pares revistos à mão (`pares_revistos.csv`) |
 | `data/`, `cache/` | Base de dados e páginas descarregadas; locais, **não** vão para o git |
+
+## Passos do trabalho, por ordem
+
+| # | Passo | Comando / ficheiro | IA? |
+|---|---|---|---|
+| 1 | Indexar a lista do STJ (21 681 acórdãos) | `scraper.py indexar` | não |
+| 2 | Escolher o subset com contagens por ano | `scraper.py stats` | não |
+| 3 | Abrir os acórdãos candidatos e os dos relatores da 4.ª Secção | `scraper.py detalhes` | não |
+| 4 | Filtrar: 4.ª Secção + decisões de mérito (1820) | `pipeline/filtrar.py` | não |
+| 5 | Ficha por acórdão (400 até agora, com citação verificada) | `pipeline/extrair.py` | **sim** |
+| 6 | Agrupar por tema (30 temas) e atribuir fichas novas | `pipeline/agrupar.py`, `atribuir_temas.py` | não |
+| 7 | Comparar pares do mesmo tema (mesma solução / oposta / não comparável) | `pipeline/comparar.py` | **sim** |
+| 8 | Validar com o AUJ n.º 6/2024 e rever 25 veredictos à mão | `pipeline/validar_auj.py`, `revisao/` | **sim** + revisão humana |
+| 9 | Divergência isolada, coexistente, inconsistente ou viragem | `pipeline/viragens.py` | não |
+| 10 | Exportar para a app e publicar | `pipeline/exportar.py`, `app/app.py` | não |
+
+**Como as peças se encaixam.** Todas as etapas leem e escrevem na mesma base SQLite, por isso podem correr em separado, pela ordem acima. São retomáveis (não repetem trabalho) e as respostas da IA ficam em cache. Toda a citação que a IA devolve tem de ser texto literal do sumário; senão é recusada. A IA trabalha *antes*, em lote; a app só lê um ficheiro (`app/dados.json`), por isso é rápida e dá sempre os mesmos resultados. As etapas com IA param sozinhas ao atingir o limite diário gratuito.
 
 ## Como correr
 

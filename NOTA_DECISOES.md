@@ -1,7 +1,7 @@
 # Nota de decisões
 
 > Entregável do enunciado: *"uma nota curta sobre as decisões tomadas: subset escolhido, abordagem para agrupar por tema e para detetar divergências, e principais limitações"*.
-> Estado a 2026-10-13: subset, temas e deteção de divergências estão feitos e medidos; a revisão manual de 25 classificações está feita (secção 3).
+> Estado a 2026-10-15: subset, temas e deteção de divergências estão feitos e medidos; a revisão manual de 25 classificações está feita (secção 3).
 
 ## Resumo (leitura de 1 minuto)
 
@@ -9,7 +9,7 @@
 - **Temas:** a IA lê o sumário de cada acórdão e escreve uma ficha (questão, solução, citação verificada por programa); as fichas agrupam-se em 30 temas por TF-IDF. **Só 400 dos 1820 têm ficha** (limite de custo da IA).
 - **Divergências:** um juiz de pares (IA) compara acórdãos do mesmo tema e responde "mesma solução", "oposta" ou "não comparável". Em 71 pares válidos encontrou 1 divergência candidata (2011), próxima da questão que o AUJ n.º 6/2024 veio resolver, mas o sistema contradiz-se nela (ver secção 3), e 1 falso positivo identificado à mão. Não declaramos nenhuma viragem confirmada.
 - **Validação:** 25 veredictos revistos à mão, 18 certos em 23 (78%); a IA erra por cautela (diz "não comparável" a mais), sem inventar divergências.
-- **Limitações principais:** 20% de cobertura, um só tribunal e área, dois modelos de IA (um gratuito), um só revisor sem formação jurídica. O resto desta nota explica cada decisão.
+- **Limitações principais:** 22% de cobertura (só 400 dos 1820 acórdãos têm ficha), um só tribunal e área, dois modelos de IA (um gratuito), um só revisor sem formação jurídica. O resto desta nota explica cada decisão.
 
 ## 1. Subset escolhido — [FEITO]
 
@@ -41,7 +41,7 @@ Princípio: **só se compara o que é comparável.** Duas decisões opostas sobr
 - Escolha dos pares. Os primeiros 69 pares compararam cada acórdão com o seguinte, por data (barato, mas mistura subquestões: só 11 de 55 pares válidos eram comparáveis, 20%). Passou a usar-se a **semelhança**: cada acórdão compara-se com os 2 vizinhos mais parecidos do mesmo tema (semelhança TF-IDF >= 0,30), pelos mais parecidos primeiro. Antes de a usar, medi nos 55 pares já julgados que a semelhança prevê a comparabilidade (AUC 0,75). **Resultado real nos primeiros 20 pares assim escolhidos: 16 válidos, dos quais 10 comparáveis (62%, contra 20%)**: a previsão (~45%) foi superada. Mas um desses 10 era um falso positivo (ver abaixo), e o método também fez aparecer contradições (ver abaixo).
 - **Divergência** = soluções opostas que coexistem. **Viragem** = a orientação dominante muda de forma sustentada. **A viragem é calculada automaticamente** (`pipeline/viragens.py`): ligam-se em grupos os acórdãos unidos por `mesma_solucao` (`nao_comparavel` não liga nada); para cada par de soluções opostas contam-se os acórdãos do grupo antigo e do recente. É *viragem* se ambos têm pelo menos 2 acórdãos (mínimo configurável) e o grupo antigo é anterior ao recente; *divergência que coexiste* se as épocas se sobrepõem; *divergência isolada* se um dos lados tem menos de 2. Há ainda o estado *inconsistente*: quando as cadeias de «mesma solução» ligam os dois lados de um par oposto, o juiz contradiz-se e não se conclui nada. Resultado atual: a divergência de 2011 é **inconsistente**, por isso **não declaramos nenhuma viragem confirmada**.
 
-**Validação com um acórdão de uniformização (AUJ).** O AUJ n.º 6/2024 fixou o nexo de imputação da responsabilidade agravada do empregador. Comparei 41 pares válidos desse tema (2010–2026): **2 soluções opostas, 13 mesma solução, 26 não comparáveis**. A primeira oposta (2011-05-18 contra 2011-10-26) é sobre se é preciso provar a culpa do empregador quando se invoca a inobservância de regras de segurança, questão muito próxima da que o AUJ veio resolver (relação exata a confirmar por um jurista). **A segunda (2012-01-05 contra 2026-05-27) é um falso positivo**: os dois acórdãos aplicam a mesma regra (é preciso provar a violação das regras de segurança e a ligação ao acidente); num provou-se e no outro não, e a diferença está nos factos, e não numa orientação oposta. Foi assinalado à mão (`revisao/pares_revistos.csv`, avaliação do assistente a confirmar) e a app mostra-o com aviso e fora da contagem. Nos 30 pares válidos de outros temas não houve nenhuma divergência (6 iguais, 24 não comparáveis).
+**Validação com um acórdão de uniformização (AUJ).** O AUJ n.º 6/2024 fixou o nexo de imputação da responsabilidade agravada do empregador. Comparei 41 pares válidos desse tema (2010–2026): **2 soluções opostas, 13 mesma solução, 26 não comparáveis**. A primeira oposta (2011-05-18 contra 2011-10-26) é sobre se é preciso provar a culpa do empregador quando se invoca a inobservância de regras de segurança, questão muito próxima da que o AUJ veio resolver (relação exata a confirmar por um jurista). **A segunda (2012-01-05 contra 2026-05-27) é um falso positivo**: os dois acórdãos aplicam a mesma regra (é preciso provar a violação das regras de segurança e a ligação ao acidente); num provou-se e no outro não, e a diferença está nos factos, e não numa orientação oposta. Foi assinalado à mão (`revisao/pares_revistos.csv`; é uma avaliação minha, a confirmar por um jurista) e a app mostra-o com aviso e fora da contagem. Nos 30 pares válidos de outros temas não houve nenhuma divergência (6 iguais, 24 não comparáveis).
 
 **Contradição interna.** Com mais pares, a divergência de 2011 ficou ligada por cadeias de «mesma solução» a acórdãos de ambos os lados (um grupo de 9 acórdãos que inclui os dois). O sistema marca-a como *inconsistente*: o juiz gratuito não é coerente entre pares, o que reduz a confiança nas cadeias de «mesma solução» e na viragem. Por isso **não declaramos nenhuma viragem**.
 
@@ -60,7 +60,7 @@ Princípio: **só se compara o que é comparável.** Duas decisões opostas sobr
 
 **Padrão de erro.** Os 5 desacordos são todos "não comparável" que o revisor considera comparáveis, por haver a mesma questão e a mesma conclusão (casos 5, 17, 18, 20 e 21). Exemplo (caso 18): os dois acórdãos de 2026 concluem que o empregador responde de forma agravada, mas a IA diz "não comparável" porque só um cita o AUJ n.º 6/2024. Não houve nenhum "mesma solução" nem "solução oposta" contestado. Em suma, **a IA é conservadora: perde divergências e igualdades (menor cobertura) em vez de inventar divergências (falsos positivos)**, o que é coerente com termos encontrado apenas uma divergência.
 
-**Cautelas.** Só há 1 caso de solução oposta, por isso a fiabilidade desse veredicto, o mais importante, não se mede aqui; a revisão tem um só revisor, sem jurista; e o revisor viu a leitura do assistente, o que pode ter enviesado algumas respostas.
+**Cautelas.** Só há 1 caso de solução oposta, por isso a fiabilidade desse veredicto, o mais importante, não se mede aqui; a revisão tem um só revisor, sem jurista; e o revisor viu os resumos escritos pela IA, o que pode ter enviesado algumas respostas.
 
 ## 4. Limitações
 
@@ -84,16 +84,16 @@ A lista do DGSI não mostra a secção; só se vê abrindo cada acórdão. Abrir
 - Diferenças de factos podem parecer divergências.
 - O índice do DGSI muda enquanto se recolhe (entram acórdãos novos no topo); duplicados são inofensivos porque cada acórdão tem um identificador único.
 - Sumários de qualidade desigual; nem todos os acórdãos decidem o mérito (os de admissibilidade são excluídos).
-- A classificação é automática e pode conter erros; a app terá um aviso visível.
+- A classificação é automática e pode conter erros; a app tem um aviso visível.
 
 **4.3 Custos e limites da IA**
-- A extração e o juiz usaram a conta gratuita do OpenRouter, sem crédito: o `claude-haiku-5-5` serviu para 264 fichas (cerca de 0,11 USD no total) até a conta recusar (erro 402), e depois usou-se um modelo gratuito (`nvidia/nemotron-3-super-120b-a12b:free`, 136 fichas e todas as comparações), limitado a **50 pedidos por dia**. Por isso só **400 de 1820** acórdãos têm ficha (22%).
+- A extração e o juiz usaram o OpenRouter, com crédito mínimo e sem pagar do meu bolso: o `claude-haiku-5-5` serviu para 264 fichas (cerca de 0,11 USD no total) até a conta recusar (erro 402), e depois usou-se um modelo gratuito (`nvidia/nemotron-3-super-120b-a12b:free`, 136 fichas e todas as comparações), limitado a **50 pedidos por dia**. Por isso só **400 de 1820** acórdãos têm ficha (22%).
 - Dois modelos diferentes fizeram as fichas. Numa amostra de 50 comparados, o tipo da decisão coincidiu em 46/50 e as citações foram 100% válidas nos dois.
 - O agrupamento por TF-IDF é menos fino que os *embeddings* planeados.
 - O marcador de AUJ do filtro (`auj=1`) apanha 53 acórdãos, mas só 2 são AUJ a sério; os restantes citam ou discutem uniformização. A validação usa os acórdãos que citam o AUJ n.º 6/2024.
 
 **4.4 O que os resultados não permitem concluir**
-- **A amostra de fichas não é aleatória.** Cerca de 316 foram escolhidas ao acaso, mas 42 foram escolhidas de propósito (o tema do AUJ n.º 6/2024, por expressão regular) e 12 vieram depois ao acaso. Por isso o tema do AUJ tem muito mais acórdãos do que os outros, e os números de divergências **não são uma taxa do tribunal inteiro**.
+- **A amostra de fichas não é aleatória.** Parte foi escolhida ao acaso, mas o tema do AUJ n.º 6/2024 foi escolhido de propósito (por expressão regular no sumário) e ficou com muito mais acórdãos do que os outros temas. Os números de divergências **não são uma taxa do tribunal inteiro**.
 - **A validação assenta num só AUJ.** Encontrar a divergência que um AUJ resolveu é um bom sinal, mas é um caso; não permite falar de taxa de deteção.
 - **O juiz de pares foi um modelo gratuito** (`nvidia/nemotron-3-super-120b-a12b:free`) e não o modelo mais forte previsto no plano (sem crédito). Pode errar mais; as citações verificadas limitam as invenções, não os erros de interpretação.
 - **Sem jurista.** As classificações foram revistas por quem fez o projeto, que não tem formação jurídica, com ajuda da IA; não substitui a revisão de um jurista. A taxa de acerto da revisão está na secção 3.
